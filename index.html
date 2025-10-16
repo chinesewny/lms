@@ -93,23 +93,32 @@
             </header>
 
             <div class="p-6">
-                <div id="dashboard-view" class="page-view">...</div>
-                <div id="lessons-view" class="hidden page-view">...</div>
-                <div id="assignments-view" class="hidden page-view">...</div>
-                <div id="submissions-view" class="hidden page-view">...</div>
-                <div id="students-view" class="hidden page-view">...</div>
-                <div id="teachers-view" class="hidden page-view">...</div>
-                <div id="profile-view" class="hidden page-view">...</div>
-                <div id="my-submissions-view" class="hidden page-view">...</div>
+                <div id="dashboard-view" class="page-view">
+                    </div>
+                <div id="lessons-view" class="hidden page-view">
+                    </div>
+                <div id="assignments-view" class="hidden page-view">
+                    </div>
+                 <div id="submissions-view" class="hidden page-view">
+                    </div>
+                 <div id="students-view" class="hidden page-view">
+                    </div>
+                <div id="teachers-view" class="hidden page-view">
+                    </div>
+                <div id="profile-view" class="hidden page-view">
+                    </div>
+                <div id="my-submissions-view" class="hidden page-view">
+                    </div>
             </div>
         </main>
     </div>
 
-    <div id="student-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">...</div>
-    <div id="assignment-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">...</div>
-    <div id="submission-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">...</div>
-    <div id="course-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">...</div>
-    <div id="teacher-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">...</div>
+    <div id="student-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
+    <div id="assignment-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
+    <div id="submission-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
+    <div id="course-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
+    <div id="teacher-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
+    <div id="lesson-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50"></div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -126,12 +135,17 @@
         const appElement = document.getElementById('app');
         const loginForm = document.getElementById('login-form');
         const loginError = document.getElementById('login-error');
-        // ... (all other DOM elements)
+        const userDisplay = document.getElementById('user-display');
+        const logoutButton = document.getElementById('logout-button');
+        const pageTitle = document.getElementById('page-title');
+        const mainContent = document.getElementById('main-content');
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const allViews = document.querySelectorAll('.page-view');
 
         // --- Helper Functions ---
         const showLoader = (show) => {
             const loader = document.getElementById('loader');
-            loader.style.display = show ? 'flex' : 'none';
             if (show) loader.classList.add('active');
             else loader.classList.remove('active');
         };
@@ -148,32 +162,35 @@
         async function callAppsScript(action, payload = {}) {
             showLoader(true);
             try {
-                const response = await google.script.run
-                    .withSuccessHandler(result => {
-                        showLoader(false);
-                        if (result.status === 'error') {
-                            throw new Error(result.message);
-                        }
-                        return result;
-                    })
-                    .withFailureHandler(error => {
-                        showLoader(false);
-                        console.error('Apps Script Error:', error);
-                        showToast(`เกิดข้อผิดพลาด: ${error.message}`, true);
-                        throw error;
-                    })
-                    [action](payload);
-                return response;
+                // This is a Promise-based wrapper for google.script.run
+                return await new Promise((resolve, reject) => {
+                    google.script.run
+                        .withSuccessHandler(response => {
+                            showLoader(false);
+                            if (response && response.status === 'error') {
+                                console.error('Server-side error:', response.message);
+                                showToast(response.message, true);
+                                reject(new Error(response.message));
+                            } else {
+                                resolve(response);
+                            }
+                        })
+                        .withFailureHandler(error => {
+                            showLoader(false);
+                            console.error('Apps Script API Error:', error);
+                            showToast(`การเชื่อมต่อล้มเหลว: ${error.message}`, true);
+                            reject(error);
+                        })
+                        [action](payload);
+                });
             } catch (error) {
-                // This catches client-side errors before the call is even made
                 showLoader(false);
-                console.error('Client-side call error:', error);
-                showToast(error.message, true);
+                // Errors are already displayed by the handlers, just re-throw to stop execution
                 throw error;
             }
         }
         
-        // --- Authentication ---
+        // --- Authentication & Data Loading ---
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = e.target.username.value;
@@ -184,104 +201,271 @@
                 const result = await callAppsScript('handleLogin', { username, password });
                 if (result.status === 'success') {
                     appState.currentUser = result.user;
-                    await onLoginSuccess();
-                } else {
-                    loginError.textContent = result.message;
-                    loginError.classList.remove('hidden');
+                    liveDatabase = result.data; // Optimized: Get all data on login
+                    onLoginSuccess();
                 }
             } catch (error) {
-                 // Error is already handled by callAppsScript's failure handler
+                 // Error is handled by callAppsScript's failure/success handler
             }
         });
 
-        async function onLoginSuccess() {
+        function onLoginSuccess() {
             loginPage.classList.add('hidden');
             appElement.classList.remove('hidden');
+            initializeDashboard();
+        }
+
+        logoutButton.addEventListener('click', () => {
+            location.reload(); // Simplest way to log out and clear all state
+        });
+        
+        function initializeDashboard() {
+            if (!appState.currentUser) return;
+            userDisplay.textContent = `ยินดีต้อนรับ, ${appState.currentUser.name}`;
             
-            // Now fetch the main data
-            const dataResult = await callAppsScript('getAllData');
-            if(dataResult.status === 'success'){
-                liveDatabase = dataResult.data;
-                initializeDashboard();
+            setupMenus();
+            
+            if (appState.currentUser.role === 'student') {
+                appState.studentCourses = liveDatabase.courses.filter(course => 
+                    course.rooms && course.rooms.split(',').map(r => r.trim()).includes(appState.currentUser.classId)
+                );
+                navigateTo('lessons-view', 'เนื้อหาบทเรียน');
             } else {
-                showToast("ไม่สามารถโหลดข้อมูลหลักได้", true);
+                navigateTo('dashboard-view', 'ภาพรวม');
+            }
+        }
+
+        // --- Navigation ---
+        function navigateTo(viewId, title) {
+            allViews.forEach(view => view.classList.add('hidden'));
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                pageTitle.textContent = title;
+                appState.currentView = viewId;
+                
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                const activeLink = document.querySelector(`.nav-link[data-view="${viewId}"]`);
+                if(activeLink) activeLink.classList.add('active');
+
+                // A map of view IDs to their corresponding render functions
+                const renderMap = {
+                    'dashboard-view': renderDashboard,
+                    'lessons-view': renderLessons,
+                    'assignments-view': renderAssignments,
+                    'submissions-view': renderSubmissions,
+                    'students-view': renderStudents,
+                    'teachers-view': renderTeachers,
+                    'profile-view': renderProfile,
+                    'my-submissions-view': renderMySubmissions,
+                };
+                
+                // Call the render function for the current view
+                if(renderMap[viewId]) {
+                    renderMap[viewId]();
+                } else {
+                    targetView.innerHTML = `<p class="text-center text-gray-500">หน้านี้ยังไม่พร้อมใช้งาน</p>`;
+                }
             }
         }
         
-        // ... The rest of your JavaScript logic ...
-        // Initialize dashboard, render functions, modals, event listeners etc.
-        // Make sure to replace all `fetch` calls with `callAppsScript('actionName', { payload })`
-        
-        // Example: Rewriting student form submission
-        document.getElementById('student-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = {
-                originalId: document.getElementById('student-original-id').value,
-                classId: document.getElementById('student-class-id').value,
-                rowIndex: document.getElementById('student-row-index').value,
-                number: document.getElementById('student-number').value,
-                studentId: document.getElementById('student-code').value,
-                name: document.getElementById('student-name').value,
-            };
+        // --- Render Functions (will populate the empty views) ---
+        function renderDashboard() {
+            const view = document.getElementById('dashboard-view');
+            // ... Logic to calculate stats and create cards ...
+            view.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    </div>`;
+            // For now, this is a placeholder. A full implementation would calculate counts.
+        }
 
-            try {
-                const result = await callAppsScript('updateStudent', payload);
-                if (result.status === 'success') {
-                    // Update local database and re-render
-                    liveDatabase.students = result.updatedStudents; // Get updated data from server
-                    liveDatabase.users = result.updatedUsers;
-                    document.getElementById('student-modal').classList.remove('active');
-                    renderStudents();
-                    showToast('บันทึกข้อมูลนักเรียนสำเร็จ');
-                }
-            } catch (error) {
-                 // Error handled by callAppsScript
-            }
-        });
+        function renderLessons() {
+            const view = document.getElementById('lessons-view');
+            // ... Logic to filter and display lessons ...
+            view.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">เนื้อหาบทเรียน</h2>
+                        ${appState.currentUser.role !== 'student' ? '<button id="add-lesson-btn" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">เพิ่มเนื้อหา</button>' : ''}
+                    </div>
+                    <div id="lesson-list" class="space-y-3">
+                       <p class="text-center text-gray-500">ไม่มีเนื้อหาบทเรียน</p>
+                    </div>
+                </div>`;
+        }
         
-        // Example: Handling file upload
-        document.getElementById('student-upload').addEventListener('change', (e) => {
+        function renderStudents() {
+            const view = document.getElementById('students-view');
+            const teacherId = appState.currentUser.id;
+            const myCourses = liveDatabase.courses.filter(c => c.teacherId == teacherId);
+            const myRooms = [...new Set(myCourses.flatMap(c => (c.rooms || '').split(',').map(r => r.trim())))];
+
+            view.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">จัดการนักเรียน</h2>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <select id="student-class-filter" class="p-2 border border-gray-300 rounded-md w-full sm:w-auto">
+                            <option value="">-- เลือกห้องเรียน --</option>
+                            ${myRooms.map(room => `<option value="${room}">${room}</option>`).join('')}
+                        </select>
+                        <div class="flex gap-2">
+                            <a href="data:text/csv;charset=utf-8,เลขที่,รหัสประจำตัว,ชื่อ-นามสกุล%0A1,12345,เด็กชายตัวอย่าง เรียนดี" download="student_template.csv" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">แม่แบบ</a>
+                            <label class="cursor-pointer px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
+                                อัปโหลด CSV
+                                <input type="file" id="student-upload" class="hidden" accept=".csv">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white text-base">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="py-3 px-4 text-left font-semibold text-gray-600">เลขที่</th>
+                                    <th class="py-3 px-4 text-left font-semibold text-gray-600">รหัสนักเรียน</th>
+                                    <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่อ-สกุล</th>
+                                    <th class="py-3 px-4 text-left font-semibold text-gray-600">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body">
+                                <tr><td colspan="4" class="text-center py-8 text-gray-500">กรุณาเลือกห้องเรียน</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            
+            // Add event listeners after innerHTML is set
+            document.getElementById('student-class-filter').addEventListener('change', renderStudentTable);
+            document.getElementById('student-upload').addEventListener('change', handleStudentUpload);
+        }
+
+        function renderStudentTable() {
+            const selectedClass = document.getElementById('student-class-filter').value;
+            const tableBody = document.getElementById('student-table-body');
+            if (!selectedClass) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">กรุณาเลือกห้องเรียน</td></tr>';
+                return;
+            }
+            const studentsInClass = liveDatabase.students[selectedClass] || [];
+            if(studentsInClass.length === 0) {
+                 tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">ไม่พบข้อมูลนักเรียน</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = [...studentsInClass]
+                .sort((a,b) => a.number - b.number)
+                .map(student => `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-4 border-b">${student.number}</td>
+                        <td class="py-3 px-4 border-b">${student.studentId}</td>
+                        <td class="py-3 px-4 border-b">${student.name}</td>
+                        <td class="py-3 px-4 border-b flex gap-2">
+                            <button class="text-blue-600 hover:text-blue-800">แก้ไข</button>
+                            <button class="text-red-600 hover:text-red-800">ลบ</button>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+        
+        // --- Other render functions (assignments, submissions, etc.) would follow a similar pattern ---
+        function renderAssignments() { /* Placeholder */ }
+        function renderSubmissions() { /* Placeholder */ }
+        function renderTeachers() { /* Placeholder */ }
+        function renderProfile() { /* Placeholder */ }
+        function renderMySubmissions() { /* Placeholder */ }
+
+        // --- Event Handlers & Modal Logic ---
+        
+        async function handleStudentUpload(e) {
             const file = e.target.files[0];
             const selectedClass = document.getElementById('student-class-filter').value;
             if (!file || !selectedClass) {
                 showToast('กรุณาเลือกห้องเรียนก่อนอัปโหลดไฟล์', true);
                 return;
             }
-
+            
             const reader = new FileReader();
             reader.onload = async (event) => {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet);
+                const text = event.target.result;
+                // Basic CSV parsing, assuming format: number,studentId,name
+                const students = text.split('\n').slice(1).map(line => {
+                    const [number, studentId, name] = line.split(',').map(s => s.trim());
+                    return { number, studentId, name };
+                }).filter(s => s.studentId && s.name);
 
-                if(json.length === 0) {
-                    showToast('ไฟล์ที่อัปโหลดไม่มีข้อมูล', true);
+                if (students.length === 0) {
+                    showToast('ไม่พบข้อมูลนักเรียนที่ถูกต้องในไฟล์', true);
                     return;
                 }
-                
-                // Map to expected keys, assuming columns are: รหัสประจำตัว, เลขที่, ชื่อ-นามสกุล
-                const students = json.map(row => ({
-                    studentId: row['รหัสประจำตัว'],
-                    number: row['เลขที่'],
-                    name: row['ชื่อ-นามสกุล']
-                }));
 
                 try {
                     const result = await callAppsScript('addStudentsFromCSV', { classId: selectedClass, students });
-                    if(result.status === 'success') {
-                        liveDatabase = result.newData; // Refresh all data
-                        renderStudents();
+                    if (result.status === 'success') {
+                        liveDatabase = result.newData; // Refresh all local data
+                        renderStudentTable(); // Re-render the table with new students
                         showToast(`เพิ่มนักเรียน ${students.length} คน สำเร็จ!`);
                     }
-                } catch (error) {
-                     // Error handled by callAppsScript
-                }
+                } catch (error) { /* Handled by callAppsScript */ }
             };
-            reader.readAsArrayBuffer(file);
-        });
+            reader.readAsText(file);
+        }
 
+        // --- UI Setup ---
+        function setupMenus() {
+            const sidebar = document.getElementById('sidebar');
+            const { role } = appState.currentUser;
+            let menuHtml = `
+                <div class="flex items-center justify-center h-20 border-b border-gray-700">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Wny-logo.png/250px-Wny-logo.png" alt="Logo" class="w-12 object-contain">
+                    <span class="ml-3 text-xl font-semibold">เมนูหลัก</span>
+                </div>
+                <nav class="mt-5 flex flex-col">`;
+
+            const teacherMenu = [
+                { view: 'dashboard-view', title: 'ภาพรวม' },
+                { view: 'lessons-view', title: 'เนื้อหาบทเรียน' },
+                { view: 'assignments-view', title: 'ภาระงาน' },
+                { view: 'submissions-view', title: 'เช็คการส่งงาน' },
+                { view: 'students-view', title: 'จัดการนักเรียน' },
+                { view: 'profile-view', title: 'ข้อมูลส่วนตัว' },
+            ];
+            
+            const studentMenu = [
+                { view: 'lessons-view', title: 'เนื้อหาบทเรียน' },
+                { view: 'assignments-view', title: 'ภาระงาน' },
+                { view: 'my-submissions-view', title: 'สถานะการส่งงาน' },
+            ];
+
+            const adminMenu = [
+                 { view: 'teachers-view', title: 'จัดการครูผู้สอน' }
+            ];
+
+            let menusToShow = [];
+            if (role === 'student') {
+                menusToShow = studentMenu;
+            } else if (role.includes('admin') || role === 'teacher') {
+                menusToShow = teacherMenu;
+                if (role === 'super-admin') {
+                    menusToShow.push(...adminMenu);
+                }
+            }
+            
+            menusToShow.forEach(item => {
+                menuHtml += `<a href="#" data-view="${item.view}" data-title="${item.title}" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700">${item.title}</a>`;
+            });
+            
+            menuHtml += `</nav>`;
+            sidebar.innerHTML = menuHtml;
+            
+            // Add event listeners to new menu links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navigateTo(e.currentTarget.dataset.view, e.currentTarget.dataset.title);
+                });
+            });
+        }
+        
+        // --- Initial Load ---
+        showLoader(false); // Hide loader initially
     });
     </script>
 </body>
