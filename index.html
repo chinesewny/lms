@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบการเรียนการสอนภาษาจีน</title>
+    <title>ระบบจักการสอนภาษาจีน</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.classList.toggle('bg-red-900', link.getAttribute('href') === hash);
         });
         
-        if (!sidebar.classList.contains('-translate-x-full')) {
+        if (sidebar.classList.contains('translate-x-0')) {
            mobileMenuButton.click();
         }
     }
@@ -331,8 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentUser.role === 'student') return database.courses.filter(c => c.rooms && c.rooms.includes(currentUser.classId));
         return [];
     }
-
-    // --- Page Render Functions ---
     
     function renderDashboard() {
         const { currentUser, database } = state;
@@ -366,10 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4"><div class="bg-yellow-100 p-4 rounded-full"><i class="fas fa-exclamation-triangle fa-2x text-yellow-500"></i></div><div><p class="text-gray-500">งานค้างส่ง</p><p class="text-3xl font-bold">${pendingSubmissions}</p></div></div>
             </div>`;
     }
-    
-    // ★★★ All other render functions (renderLessons, renderAssignments, etc.) are the same as the previous correct version,
-    // they are omitted here for brevity but are present in the full file. The logic for adding buttons to headerActions
-    // and implementing modals are also included. I will show the new and fixed ones below.
 
     function renderLessons() {
         if (state.currentUser.role !== 'student') {
@@ -407,7 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headerActions.innerHTML = `<button id="add-assignment-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"><i class="fas fa-plus mr-2"></i>เพิ่มภาระงาน</button>`;
             document.getElementById('add-assignment-btn').onclick = showAddAssignmentModal;
         }
-        // ... rest of the function is the same
         const userCourses = getVisibleCourses();
         let html = '';
         if (userCourses.length === 0) {
@@ -430,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headerActions.innerHTML = `<button id="add-student-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"><i class="fas fa-user-plus mr-2"></i>เพิ่มนักเรียน</button>`;
             document.getElementById('add-student-btn').onclick = showAddStudentModal;
         }
-         // ... rest of the function is the same
         const teacherRooms = [...new Set(getVisibleCourses().flatMap(c => c.rooms))].sort();
         mainContent.innerHTML = `
              <div class="mb-6 bg-white p-4 rounded-xl shadow flex space-x-4 items-end">
@@ -444,6 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
              </div>
              <div id="student-list-container"></div>`;
         document.getElementById('student-room-filter').addEventListener('change', (e) => renderStudentList(e.target.value));
+        if(teacherRooms.length > 0) renderStudentList(teacherRooms[0]);
     }
     
     function renderManageTeachers() {
@@ -478,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    // --- ★★★ NEW MODAL ★★★ ---
     function showAddLessonModal() {
         const visibleCourses = getVisibleCourses();
         modalContent.innerHTML = `
@@ -505,11 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!courseId || !name || !url) {
             alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return;
         }
-        try {
-            new URL(url);
-        } catch (_) {
-            alert('รูปแบบ URL ไม่ถูกต้อง'); return;
-        }
+        try { new URL(url); } catch (_) { alert('รูปแบบ URL ไม่ถูกต้อง'); return; }
 
         const result = await fetchData({ action: 'addLesson', courseId, name, url });
         if (result && result.status === 'success') {
@@ -520,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { alert('ไม่สามารถเพิ่มลิงก์ได้'); }
     }
     
-    // --- Confirmation Modal Logic ---
     function openConfirmationModal(title, text, onConfirm) {
         const confirmModal = document.getElementById('confirm-modal');
         document.getElementById('confirm-modal-title').textContent = title;
@@ -534,82 +521,95 @@ document.addEventListener('DOMContentLoaded', () => {
         const close = () => { 
             confirmModal.classList.add('hidden');
             confirmBtn.removeEventListener('click', confirmHandler);
+            cancelBtn.removeEventListener('click', close);
         };
 
         confirmBtn.addEventListener('click', confirmHandler, { once: true });
         cancelBtn.addEventListener('click', close, { once: true });
     }
 
-    // --- The rest of the functions for rendering and modals remain the same ---
-    // This is a placeholder for the other correct functions from previous versions
-    // like renderStudentList, showAddStudentModal, handleAddNewStudent, etc.
-    // They are included in the full file but omitted here for brevity.
-    function renderStudentAssignmentStatus(assignmentId){const e=state.database.submissions.find(e=>e.studentId==state.currentUser.studentId&&e.assignmentId==assignmentId),t=null==e?"ค้างส่ง":e.status,s="ส่งแล้ว"===t?"status-sent":"status-pending";return`<span class="status-badge ${s}">${t}</span>`}function renderSubmissions(){const e=getVisibleCourses();let t=`
-            <div class="mb-6 bg-white p-4 rounded-xl shadow flex flex-wrap gap-4 items-end">
-                 <div>
-                    <label for="course-filter" class="block text-sm font-medium text-gray-700">เลือกรายวิชา</label>
-                    <select id="course-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
-                        <option value="">-- ทั้งหมด --</option>
-                        ${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}
-                    </select>
-                </div>
-                 <div>
-                    <label for="room-filter" class="block text-sm font-medium text-gray-700">เลือกห้อง</label>
-                    <select id="room-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
-                         <option value="">-- ทั้งหมด --</option>
-                    </select>
-                </div>
-            </div>
-            <div id="submission-table-container"></div>`;mainContent.innerHTML=t;const s=document.getElementById("course-filter"),n=document.getElementById("room-filter");s.addEventListener("change",(()=>{const t=s.value;n.innerHTML='<option value="">-- ทั้งหมด --</option>',t&&(n.innerHTML+=e.find(e=>e.id==t).rooms.map(e=>`<option value="${e}">${e}</option>`).join("")),renderSubmissionTable()})),n.addEventListener("change",renderSubmissionTable),renderSubmissionTable()}function renderSubmissionTable(){const e=document.getElementById("submission-table-container"),t=document.getElementById("course-filter").value,s=document.getElementById("room-filter").value,n=getVisibleCourses();let a=[];s?a=state.database.students[s]||[]:t?(a=n.find(e=>e.id==t).rooms.flatMap(e=>state.database.students[e]||[])):(a=[...new Set(n.flatMap(e=>e.rooms))].flatMap(e=>state.database.students[e]||[]));const o=t?state.database.assignments.filter(e=>e.courseId==t):state.database.assignments.filter(e=>n.some(t=>t.id==e.courseId));let i=`<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>${o.map(e=>`<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${e.title}</th>`).join("")}</tr></thead><tbody class="bg-white divide-y divide-gray-200">${a.sort(((e,t)=>e.เลขที่-t.เลขที่)).map((e=>{const t=state.database.users.find(t=>t.studentId==e.รหัสประจำตัว);return t?`<tr><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">${e["ชื่อ-นามสกุล"]} <span class="text-gray-500 font-normal">(${e.เลขที่})</span></td>${o.map((s=>{const n=state.database.submissions.find(e=>e.studentId==t.studentId&&e.assignmentId==s.id),a=null!=n?n.status:"ค้างส่ง",o=null!=n?n.score:"";return`<td class="px-6 py-4 whitespace-nowrap"><select class="status-select border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"><option value="ค้างส่ง" ${"ค้างส่ง"===a?"selected":""}>ค้างส่ง</option><option value="ส่งแล้ว" ${"ส่งแล้ว"===a?"selected":""}>ส่งแล้ว</option></select><input type="text" value="${o}" placeholder="คะแนน" class="score-input mt-1 w-20 border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"></td>`})).join("")}</tr>`:""})).join("")}</tbody></table></div>`;e.innerHTML=a.length>0?i:'<div class="bg-white p-6 rounded-xl shadow-lg"><p class="text-gray-500">ไม่พบข้อมูลนักเรียน หรือยังไม่ได้เลือกรายวิชา/ห้องเรียน</p></div>',addSubmissionEventListeners()}function addSubmissionEventListeners(){document.querySelectorAll(".status-select, .score-input").forEach((e=>{e.addEventListener("change",(async e=>{const{studentId:t,assignmentId:s}=e.target.dataset,n=document.querySelector(`.status-select[data-student-id='${t}'][data-assignment-id='${s}']`).value,a=document.querySelector(`.score-input[data-student-id='${t}'][data-assignment-id='${s}']`).value;let o=state.database.submissions.find(e=>e.studentId==t&&e.assignmentId==s);o?(o.status=n,o.score=a):state.database.submissions.push({studentId:t,assignmentId:s,status:n,score:a}),await fetchData({action:"updateSubmission",studentId:t,assignmentId:s,status:n,score:a})}))}))}function renderStudentList(e){const t=document.getElementById("student-list-container");if(!e)return void(t.innerHTML='<p class="text-gray-500">กรุณาเลือกห้องเรียนเพื่อแสดงรายชื่อนักเรียน</p>');const s=(state.database.students[e]||[]).sort(((e,t)=>e.เลขที่-t.เลขที่));t.innerHTML=`
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h3 class="text-xl font-bold mb-4">รายชื่อนักเรียนห้อง ${e}</h3>
-                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เลขที่</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสประจำตัว</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3"></th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${s.map(t=>`<tr><td class="px-6 py-4 whitespace-nowrap">${t.เลขที่}</td><td class="px-6 py-4 whitespace-nowrap">${t.รหัสประจำตัว}</td><td class="px-6 py-4 whitespace-nowrap">${t["ชื่อ-นามสกุล"]}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button class="edit-student-btn text-red-600 hover:text-red-900" data-room="${e}" data-row-index="${t.rowIndex}">แก้ไข</button></td></tr>`).join("")}</tbody></table></div></div>`,document.querySelectorAll(".edit-student-btn").forEach((t=>{t.addEventListener("click",(t=>{const{room:s,rowIndex:n}=t.target.dataset;showEditStudentModal(s,state.database.students[s].find(e=>e.rowIndex==n))}))}))}function showEditStudentModal(e,t){modalContent.innerHTML=`
-            <h2 class="text-2xl font-bold mb-4">แก้ไขข้อมูลนักเรียน</h2><p class="mb-4">ห้อง ${e}</p>
-            <div class="space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700">เลขที่</label><input type="text" id="edit-student-number" value="${t.เลขที่}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700">รหัสประจำตัว</label><input type="text" id="edit-student-id" value="${t.รหัสประจำตัว}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label><input type="text" id="edit-student-name" value="${t["ชื่อ-นามสกุล"]}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3"><button id="cancel-edit-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-edit-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("cancel-edit-btn").onclick=()=>modal.classList.add("hidden"),document.getElementById("save-edit-btn").onclick=async()=>{const s=t.รหัสประจำตัว,n=document.getElementById("edit-student-number").value,a=document.getElementById("edit-student-id").value,o=document.getElementById("edit-student-name").value;t.เลขที่=n,t.รหัสประจำตัว=a,t["ชื่อ-นามสกุล"]=o,await fetchData({action:"updateStudent",classId:e,rowIndex:t.rowIndex,originalStudentId:s,studentId:a,number:n,name:o}),modal.classList.add("hidden"),renderStudentList(e)}}function renderStudentSubmissions(){const e=state.currentUser,t=getVisibleCourses();let s="";t.forEach((t=>{const n=state.database.assignments.filter(e=>e.courseId==t.id);n.length>0&&(s+=`<div class="bg-white p-6 rounded-xl shadow-lg mb-6"><h2 class="text-2xl font-bold text-red-800 mb-4">${t.name} (${t.code})</h2><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชิ้นงาน</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${n.map((t=>{const n=state.database.submissions.find(s=>s.studentId==e.studentId&&s.assignmentId==t.id),a=null!=n?n.status:"ค้างส่ง",o=null!=n?n.score:"-",i="ส่งแล้ว"===a?"status-sent":"status-pending";return`<tr><td class="px-6 py-4 whitespace-nowrap">${t.title}</td><td class="px-6 py-4 whitespace-nowrap"><span class="status-badge ${i}">${a}</span></td><td class="px-6 py-4 whitespace-nowrap">${o}</td></tr>`})).join("")}</tbody></table></div></div>`)})),mainContent.innerHTML=s||'<p class="text-gray-500">ยังไม่มีงานที่ได้รับมอบหมาย</p>'}function showAddAssignmentModal(){const e=getVisibleCourses();modalContent.innerHTML=`
-            <h2 class="text-2xl font-bold mb-4">เพิ่มภาระงานใหม่</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 required-label">รายวิชา</label>
-                    <select id="add-assignment-course" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
-                        ${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}
-                    </select>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">หัวข้อ</label><input type="text" id="add-assignment-title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700">รายละเอียด</label><textarea id="add-assignment-desc" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea></div>
-                <div><label class="block text-sm font-medium text-gray-700">URL รูปภาพตัวอย่าง (ถ้ามี)</label><input type="text" id="add-assignment-image" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-assignment-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-assignment-btn").onclick=handleAddNewAssignment}async function handleAddNewAssignment(){const e=document.getElementById("add-assignment-course").value,t=document.getElementById("add-assignment-title").value.trim(),s=document.getElementById("add-assignment-desc").value.trim(),n=document.getElementById("add-assignment-image").value.trim();if(!e||!t)return void alert("กรุณากรอกข้อมูลรายวิชาและหัวข้อให้ครบถ้วน");const a=await fetchData({action:"addAssignment",courseId:e,title:t,description:s,imageUrl:n});a&&"success"===a.status?(state.database.assignments.push(a.newRecord),modal.classList.add("hidden"),renderAssignments()):alert("ไม่สามารถเพิ่มภาระงานได้")}function showAddStudentModal(){const e=document.getElementById("student-room-filter")?.value;if(!e)return void alert("กรุณาเลือกห้องเรียนก่อนเพิ่มนักเรียน");modalContent.innerHTML=`
-            <h2 class="text-2xl font-bold mb-4">เพิ่มนักเรียนใหม่ - ห้อง ${e}</h2>
-            <div class="space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700 required-label">เลขที่</label><input type="number" id="add-student-number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">รหัสประจำตัว</label><input type="number" id="add-student-id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-นามสกุล</label><input type="text" id="add-student-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-            </div>
-            <p class="text-sm text-gray-500 mt-4">หมายเหตุ: รหัสผ่านของนักเรียนจะถูกตั้งค่าให้เหมือนกับรหัสประจำตัวโดยอัตโนมัติ</p>
-            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-student-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-student-btn").onclick=()=>handleAddNewStudent(e)}async function handleAddNewStudent(e){const t=document.getElementById("add-student-number").value,s=document.getElementById("add-student-id").value,n=document.getElementById("add-student-name").value.trim();if(!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addStudent",classId:e,number:t,studentId:s,name:n});a&&"success"===a.status?(state.database.students[e]||(state.database.students[e]=[]),state.database.students[e].push(a.newStudentRecord),state.database.users.push(a.newUserRecord),modal.classList.add("hidden"),renderStudentList(e)):alert(`ไม่สามารถเพิ่มนักเรียนได้: ${null!=a?a.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}function renderManageCourses(){state.currentUser.role==="super-admin"&&(headerActions.innerHTML='<button id="add-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"><i class="fas fa-plus mr-2"></i>เพิ่มรายวิชาใหม่</button>',document.getElementById("add-course-btn").onclick=showAddCourseModal);const e=state.database.courses,t=state.database.users.filter(e=>"teacher"===e.role||"super-admin"===e.role);mainContent.innerHTML=`
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อรายวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ห้อง</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ครูผู้สอน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${e.map(e=>{const s=t.find(t=>t.id==e.teacherId);return`<tr><td class="px-6 py-4">${e.name}</td><td class="px-6 py-4">${e.code}</td><td class="px-6 py-4">${e.rooms.join(", ")}</td><td class="px-6 py-4">${s?s.name:"N/A"}</td></tr>`}).join("")}</tbody></table></div>
-            </div>`}function showAddCourseModal(){const e=state.database.users.filter(e=>"teacher"===e.role),t="super-admin"===state.currentUser.role;modalContent.innerHTML=`
-            <h2 class="text-2xl font-bold mb-4">เพิ่มรายวิชาใหม่</h2>
-            <div class="space-y-4">
-                ${t?`<div><label class="block text-sm font-medium text-gray-700 required-label">เลือกครูผู้สอน</label><select id="add-course-teacher" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>`:""}
-                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อรายวิชา</label><input type="text" id="add-course-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">รหัสวิชา</label><input type="text" id="add-course-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">ห้องที่สอน (คั่นด้วย ,)</label><input type="text" id="add-course-rooms" placeholder="เช่น ม.3/10, ม.3/11" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-course-btn").onclick=handleAddNewCourse}async function handleAddNewCourse(){const e="super-admin"===state.currentUser.role?document.getElementById("add-course-teacher").value:state.currentUser.id,t=document.getElementById("add-course-name").value.trim(),s=document.getElementById("add-course-code").value.trim(),n=document.getElementById("add-course-rooms").value.trim();if(!e||!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addCourse",teacherId:e,name:t,code:s,rooms:n});a&&"success"===a.status?(state.database.courses.push(a.newRecord),modal.classList.add("hidden"),"super-admin"===state.currentUser.role?renderManageCourses():renderDashboard()):alert(`ไม่สามารถเพิ่มรายวิชาได้: ${null!=a?a.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}function showAddTeacherModal(){modalContent.innerHTML=`
-            <h2 class="text-2xl font-bold mb-4">เพิ่มครูผู้สอนใหม่</h2>
-            <div class="space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700 required-label">Username</label><input type="text" id="add-teacher-username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">Password</label><input type="text" id="add-teacher-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-สกุล</label><input type="text" id="add-teacher-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-teacher-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-teacher-btn").onclick=handleAddNewTeacher}async function handleAddNewTeacher(){const e=document.getElementById("add-teacher-username").value.trim(),t=document.getElementById("add-teacher-password").value.trim(),s=document.getElementById("add-teacher-name").value.trim();if(!e||!t||!s)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const n=await fetchData({action:"addTeacher",username:e,password:t,name:s});n&&"success"===n.status?(state.database.users.push(n.newRecord),modal.classList.add("hidden"),renderManageTeachers()):alert(`ไม่สามารถเพิ่มครูได้: ${null!=n?n.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}
+    function renderStudentAssignmentStatus(assignmentId){const e=state.database.submissions.find(e=>e.studentId==state.currentUser.studentId&&e.assignmentId==assignmentId),t=null==e?"ค้างส่ง":e.status,s="ส่งแล้ว"===t?"status-sent":"status-pending";return`<span class="status-badge ${s}">${t}</span>`}
+    
+    function renderSubmissions(){
+        const e=getVisibleCourses();
+        let t=`<div class="mb-6 bg-white p-4 rounded-xl shadow flex flex-wrap gap-4 items-end"><div><label for="course-filter" class="block text-sm font-medium text-gray-700">เลือกรายวิชา</label><select id="course-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"><option value="">-- ทั้งหมด --</option>${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div><div><label for="room-filter" class="block text-sm font-medium text-gray-700">เลือกห้อง</label><select id="room-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"><option value="">-- ทั้งหมด --</option></select></div></div><div id="submission-table-container"></div>`;
+        mainContent.innerHTML=t;
+        const s=document.getElementById("course-filter"),n=document.getElementById("room-filter");
+        s.addEventListener("change",()=>{const t=s.value;n.innerHTML='<option value="">-- ทั้งหมด --</option>';if(t){const s=e.find(e=>e.id==t);s&&s.rooms&&(n.innerHTML+=s.rooms.map(e=>`<option value="${e}">${e}</option>`).join(""))}renderSubmissionTable()});
+        n.addEventListener("change",renderSubmissionTable);
+        renderSubmissionTable();
+    }
+    
+    function renderSubmissionTable(){
+        const e=document.getElementById("submission-table-container"),t=document.getElementById("course-filter").value,s=document.getElementById("room-filter").value,n=getVisibleCourses();
+        let a=[];
+        s?a=state.database.students[s]||[]:t?(a=(n.find(e=>e.id==t)?.rooms||[]).flatMap(e=>state.database.students[e]||[])):(a=[...new Set(n.flatMap(e=>e.rooms||[]))].flatMap(e=>state.database.students[e]||[]));
+        const o=t?state.database.assignments.filter(e=>e.courseId==t):state.database.assignments.filter(e=>n.some(t=>t.id==e.courseId));
+        let i=`<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>${o.map(e=>`<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${e.title}</th>`).join("")}</tr></thead><tbody class="bg-white divide-y divide-gray-200">${a.sort((e,t)=>e.เลขที่-t.เลขที่).map(e=>{const t=state.database.users.find(t=>t.studentId==e.รหัสประจำตัว);return t?`<tr><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">${e["ชื่อ-นามสกุล"]} <span class="text-gray-500 font-normal">(${e.เลขที่})</span></td>${o.map(s=>{const n=state.database.submissions.find(e=>e.studentId==t.studentId&&e.assignmentId==s.id),a=n?.status||"ค้างส่ง",o=n?.score||"";return`<td class="px-6 py-4 whitespace-nowrap"><select class="status-select border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"><option value="ค้างส่ง" ${"ค้างส่ง"===a?"selected":""}>ค้างส่ง</option><option value="ส่งแล้ว" ${"ส่งแล้ว"===a?"selected":""}>ส่งแล้ว</option></select><input type="text" value="${o}" placeholder="คะแนน" class="score-input mt-1 w-20 border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"></td>`}).join("")}</tr>`:""}).join("")}</tbody></table></div>`;
+        e.innerHTML=a.length>0?i:'<div class="bg-white p-6 rounded-xl shadow-lg"><p class="text-gray-500">ไม่พบข้อมูลนักเรียน หรือยังไม่ได้เลือกรายวิชา/ห้องเรียน</p></div>';
+        addSubmissionEventListeners();
+    }
+
+    function addSubmissionEventListeners(){document.querySelectorAll(".status-select, .score-input").forEach(e=>{e.addEventListener("change",async e=>{const{studentId:t,assignmentId:s}=e.target.dataset,n=document.querySelector(`.status-select[data-student-id='${t}'][data-assignment-id='${s}']`).value,a=document.querySelector(`.score-input[data-student-id='${t}'][data-assignment-id='${s}']`).value;let o=state.database.submissions.find(e=>e.studentId==t&&e.assignmentId==s);o?(o.status=n,o.score=a):state.database.submissions.push({studentId:t,assignmentId:s,status:n,score:a});await fetchData({action:"updateSubmission",studentId:t,assignmentId:s,status:n,score:a})})})}
+    
+    function renderStudentList(e){
+        const t=document.getElementById("student-list-container");
+        if(!e)return void(t.innerHTML='<p class="text-gray-500">กรุณาเลือกห้องเรียนเพื่อแสดงรายชื่อนักเรียน</p>');
+        const s=(state.database.students[e]||[]).sort((e,t)=>e.เลขที่-t.เลขที่);
+        t.innerHTML=`<div class="bg-white p-6 rounded-xl shadow-lg"><h3 class="text-xl font-bold mb-4">รายชื่อนักเรียนห้อง ${e}</h3><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เลขที่</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสประจำตัว</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3"></th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${s.map(t=>`<tr><td class="px-6 py-4 whitespace-nowrap">${t.เลขที่}</td><td class="px-6 py-4 whitespace-nowrap">${t.รหัสประจำตัว}</td><td class="px-6 py-4 whitespace-nowrap">${t["ชื่อ-นามสกุล"]}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button class="edit-student-btn text-red-600 hover:text-red-900" data-room="${e}" data-row-index="${t.rowIndex}">แก้ไข</button></td></tr>`).join("")}</tbody></table></div></div>`;
+        document.querySelectorAll(".edit-student-btn").forEach(t=>{t.addEventListener("click",t=>{const{room:s,rowIndex:n}=t.target.dataset,a=state.database.students[s].find(e=>e.rowIndex==n);showEditStudentModal(s,a)})})
+    }
+    
+    function showEditStudentModal(e,t){
+        modalContent.innerHTML=`<h2 class="text-2xl font-bold mb-4">แก้ไขข้อมูลนักเรียน</h2><p class="mb-4">ห้อง ${e}</p><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700">เลขที่</label><input type="text" id="edit-student-number" value="${t.เลขที่}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700">รหัสประจำตัว</label><input type="text" id="edit-student-id" value="${t.รหัสประจำตัว}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label><input type="text" id="edit-student-name" value="${t["ชื่อ-นามสกุล"]}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div></div><div class="mt-6 flex justify-end space-x-3"><button id="cancel-edit-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-edit-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`;
+        modal.classList.remove("hidden");
+        document.getElementById("cancel-edit-btn").onclick=()=>modal.classList.add("hidden");
+        document.getElementById("save-edit-btn").onclick=async()=>{const s=t.รหัสประจำตัว,n=document.getElementById("edit-student-number").value,a=document.getElementById("edit-student-id").value,o=document.getElementById("edit-student-name").value;t.เลขที่=n;t.รหัสประจำตัว=a;t["ชื่อ-นามสกุล"]=o;await fetchData({action:"updateStudent",classId:e,rowIndex:t.rowIndex,originalStudentId:s,studentId:a,number:n,name:o});modal.classList.add("hidden");renderStudentList(e)}
+    }
+    
+    function renderStudentSubmissions(){const e=state.currentUser,t=getVisibleCourses();let s="";t.forEach(t=>{const n=state.database.assignments.filter(e=>e.courseId==t.id);n.length>0&&(s+=`<div class="bg-white p-6 rounded-xl shadow-lg mb-6"><h2 class="text-2xl font-bold text-red-800 mb-4">${t.name} (${t.code})</h2><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชิ้นงาน</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${n.map(t=>{const n=state.database.submissions.find(s=>s.studentId==e.studentId&&s.assignmentId==t.id),a=n?.status||"ค้างส่ง",o=n?.score||"-",i="ส่งแล้ว"===a?"status-sent":"status-pending";return`<tr><td class="px-6 py-4 whitespace-nowrap">${t.title}</td><td class="px-6 py-4 whitespace-nowrap"><span class="status-badge ${i}">${a}</span></td><td class="px-6 py-4 whitespace-nowrap">${o}</td></tr>`}).join("")}</tbody></table></div></div>`)});mainContent.innerHTML=s||'<p class="text-gray-500">ยังไม่มีงานที่ได้รับมอบหมาย</p>'}
+    
+    function showAddAssignmentModal(){
+        const e=getVisibleCourses();
+        modalContent.innerHTML=`<h2 class="text-2xl font-bold mb-4">เพิ่มภาระงานใหม่</h2><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 required-label">รายวิชา</label><select id="add-assignment-course" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div><div><label class="block text-sm font-medium text-gray-700 required-label">หัวข้อ</label><input type="text" id="add-assignment-title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700">รายละเอียด</label><textarea id="add-assignment-desc" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea></div><div><label class="block text-sm font-medium text-gray-700">URL รูปภาพตัวอย่าง (ถ้ามี)</label><input type="text" id="add-assignment-image" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div></div><div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-assignment-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`;
+        modal.classList.remove("hidden");
+        document.getElementById("save-assignment-btn").onclick=handleAddNewAssignment
+    }
+
+    async function handleAddNewAssignment(){const e=document.getElementById("add-assignment-course").value,t=document.getElementById("add-assignment-title").value.trim(),s=document.getElementById("add-assignment-desc").value.trim(),n=document.getElementById("add-assignment-image").value.trim();if(!e||!t)return void alert("กรุณากรอกข้อมูลรายวิชาและหัวข้อให้ครบถ้วน");const a=await fetchData({action:"addAssignment",courseId:e,title:t,description:s,imageUrl:n});a&&"success"===a.status?(state.database.assignments.push(a.newRecord),modal.classList.add("hidden"),renderAssignments()):alert("ไม่สามารถเพิ่มภาระงานได้")}
+    
+    function showAddStudentModal(){
+        const e=document.getElementById("student-room-filter")?.value;
+        if(!e)return void alert("กรุณาเลือกห้องเรียนก่อนเพิ่มนักเรียน");
+        modalContent.innerHTML=`<h2 class="text-2xl font-bold mb-4">เพิ่มนักเรียนใหม่ - ห้อง ${e}</h2><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 required-label">เลขที่</label><input type="number" id="add-student-number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">รหัสประจำตัว</label><input type="number" id="add-student-id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-นามสกุล</label><input type="text" id="add-student-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div></div><p class="text-sm text-gray-500 mt-4">หมายเหตุ: รหัสผ่านของนักเรียนจะถูกตั้งค่าให้เหมือนกับรหัสประจำตัวโดยอัตโนมัติ</p><div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-student-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`;
+        modal.classList.remove("hidden");
+        document.getElementById("save-student-btn").onclick=()=>handleAddNewStudent(e)
+    }
+
+    async function handleAddNewStudent(e){const t=document.getElementById("add-student-number").value,s=document.getElementById("add-student-id").value,n=document.getElementById("add-student-name").value.trim();if(!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addStudent",classId:e,number:t,studentId:s,name:n});a&&"success"===a.status?(state.database.students[e]||(state.database.students[e]=[]),state.database.students[e].push(a.newStudentRecord),state.database.users.push(a.newUserRecord),modal.classList.add("hidden"),renderStudentList(e)):alert(`ไม่สามารถเพิ่มนักเรียนได้: ${a?.message||"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}
+    
+    function renderManageCourses(){
+        state.currentUser.role==="super-admin"&&(headerActions.innerHTML='<button id="add-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"><i class="fas fa-plus mr-2"></i>เพิ่มรายวิชาใหม่</button>',document.getElementById("add-course-btn").onclick=showAddCourseModal);
+        const e=state.database.courses,t=state.database.users.filter(e=>"teacher"===e.role||"super-admin"===e.role);
+        mainContent.innerHTML=`<div class="bg-white p-6 rounded-xl shadow-lg"><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อรายวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ห้อง</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ครูผู้สอน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${e.map(e=>{const s=t.find(t=>t.id==e.teacherId);return`<tr><td class="px-6 py-4">${e.name}</td><td class="px-6 py-4">${e.code}</td><td class="px-6 py-4">${e.rooms.join(", ")}</td><td class="px-6 py-4">${s?s.name:"N/A"}</td></tr>`}).join("")}</tbody></table></div></div>`
+    }
+    
+    function showAddCourseModal(){
+        const e=state.database.users.filter(e=>"teacher"===e.role),t="super-admin"===state.currentUser.role;
+        modalContent.innerHTML=`<h2 class="text-2xl font-bold mb-4">เพิ่มรายวิชาใหม่</h2><div class="space-y-4">${t?`<div><label class="block text-sm font-medium text-gray-700 required-label">เลือกครูผู้สอน</label><select id="add-course-teacher" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>`:""}<div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อรายวิชา</label><input type="text" id="add-course-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">รหัสวิชา</label><input type="text" id="add-course-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">ห้องที่สอน (คั่นด้วย ,)</label><input type="text" id="add-course-rooms" placeholder="เช่น ม.3/10, ม.3/11" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div></div><div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">บันทึก</button></div>`;
+        modal.classList.remove("hidden");
+        document.getElementById("save-course-btn").onclick=handleAddNewCourse
+    }
+
+    async function handleAddNewCourse(){const e="super-admin"===state.currentUser.role?document.getElementById("add-course-teacher").value:state.currentUser.id,t=document.getElementById("add-course-name").value.trim(),s=document.getElementById("add-course-code").value.trim(),n=document.getElementById("add-course-rooms").value.trim();if(!e||!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addCourse",teacherId:e,name:t,code:s,rooms:n});a&&"success"===a.status?(state.database.courses.push(a.newRecord),modal.classList.add("hidden"),"super-admin"===state.currentUser.role?renderManageCourses():renderDashboard()):alert(`ไม่สามารถเพิ่มรายวิชาได้: ${a?.message||"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}
+    
+    function showAddTeacherModal(){
+        modalContent.innerHTML=`<h2 class="text-2xl font-bold mb-4">เพิ่มครูผู้สอนใหม่</h2><div class="space-y-4"><div><label class="block text-sm font-medium text-gray-700 required-label">Username</label><input type="text" id="add-teacher-username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">Password</label><input type="text" id="add-teacher-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div><div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-สกุล</label><input type="text" id="add-teacher-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div></div><div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-teacher-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">บันทึก</button></div>`;
+        modal.classList.remove("hidden");
+        document.getElementById("save-teacher-btn").onclick=handleAddNewTeacher
+    }
+
+    async function handleAddNewTeacher(){const e=document.getElementById("add-teacher-username").value.trim(),t=document.getElementById("add-teacher-password").value.trim(),s=document.getElementById("add-teacher-name").value.trim();if(!e||!t||!s)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const n=await fetchData({action:"addTeacher",username:e,password:t,name:s});n&&"success"===n.status?(state.database.users.push(n.newRecord),modal.classList.add("hidden"),renderManageTeachers()):alert(`ไม่สามารถเพิ่มครูได้: ${n?.message||"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}
 
     // --- Event Listeners ---
     loginBtn.addEventListener('click', handleLogin);
@@ -619,6 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     mobileMenuButton.addEventListener('click', () => {
         sidebar.classList.toggle('-translate-x-full');
+        sidebar.classList.toggle('translate-x-0');
     });
 
     // Start the application
