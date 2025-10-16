@@ -3,995 +3,628 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจัดการการสอนภาษาจีน</title>
+    <title>ระบบการเรียนการสอนภาษาจีน</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #fef2f2;
-        }
-        .sidebar {
-            transition: transform 0.3s ease-in-out;
-        }
-        .main-content {
-            transition: margin-left 0.3s ease-in-out;
-        }
-        .modal, .loader-overlay {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-        }
-        .modal.active, .loader-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-        .modal-content {
-            transform: scale(0.95);
-            transition: transform 0.3s ease-in-out;
-        }
-        .modal.active .modal-content {
-             transform: scale(1);
+            background-color: #f7fafc;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #fee2e2;
+            background: #f1f1f1;
         }
         ::-webkit-scrollbar-thumb {
             background: #fca5a5;
-            border-radius: 4px;
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #f87171;
+            background: #ef4444;
         }
-        .nav-link.active {
-            background-color: #b91c1c;
-            color: white;
-            border-right: 4px solid #fef2f2;
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
         }
-        .table-header {
-            background-color: #fef2f2;
+        .status-sent {
+            background-color: #dcfce7;
+            color: #166534;
         }
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 8px solid #ef4444;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
+        .status-pending {
+            background-color: #fee2e2;
+            color: #991b1b;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Style for required fields */
+        .required-label::after {
+            content: ' *';
+            color: red;
         }
     </style>
 </head>
 <body class="bg-red-50">
 
-    <!-- Loading Overlay -->
-    <div id="loader" class="loader-overlay fixed inset-0 bg-black bg-opacity-50 z-[99]">
-        <div class="loader"></div>
-    </div>
-
-    <!-- Login Page -->
-    <div id="login-page" class="flex items-center justify-center min-h-screen bg-gradient-to-br from-red-100 to-red-300">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-2xl transform transition-all hover:scale-105">
-            <div class="text-center">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Wny-logo.png/250px-Wny-logo.png" alt="Logo" class="w-28 mx-auto mb-4 object-contain">
-                <h2 class="text-3xl font-bold text-gray-800">ระบบจัดการการสอนภาษาจีน</h2>
-                <p class="mt-2 text-gray-600">กรุณาลงชื่อเข้าสู่ระบบ</p>
-            </div>
-            <form id="login-form" class="mt-8 space-y-6">
-                 <div class="relative">
-                    <label for="username" class="sr-only">ชื่อผู้ใช้</label>
-                    <input id="username" name="username" type="text" required class="w-full px-4 py-3 text-gray-700 bg-gray-100 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="ชื่อผู้ใช้">
-                </div>
-                <div class="relative">
-                    <label for="password" class="sr-only">รหัสผ่าน</label>
-                    <input id="password" name="password" type="password" required class="w-full px-4 py-3 text-gray-700 bg-gray-100 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition" placeholder="รหัสผ่าน">
-                </div>
-                 <p id="login-error" class="text-red-500 text-sm text-center hidden">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</p>
-                <div>
-                     <button type="submit" id="login-button" class="w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform transform hover:scale-105 shadow-lg">
-                        ลงชื่อเข้าใช้
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="app" class="hidden">
+    <!-- Main Container -->
+    <div id="app-container" class="hidden" style="display: none;">
+        
         <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar fixed top-0 left-0 z-40 w-64 h-screen bg-gray-800 text-white shadow-xl">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Wny-logo.png/250px-Wny-logo.png" alt="Logo" class="w-12 object-contain">
-                <span class="ml-3 text-xl font-semibold">เมนูหลัก</span>
-            </div>
-            <nav id="admin-menu" class="mt-5 flex flex-col">
-                <!-- Admin/Teacher Menu will be injected here -->
-            </nav>
-            <nav id="student-menu" class="mt-5 flex flex-col">
-                 <!-- Student Menu will be injected here -->
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main id="main-content" class="main-content relative ml-0 lg:ml-64">
-            <!-- Header -->
-            <header class="flex items-center justify-between p-4 bg-white shadow-md sticky top-0 z-30">
-                <div class="flex items-center">
-                     <button id="menu-toggle" class="text-gray-600 focus:outline-none lg:hidden mr-4">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                    </button>
-                    <h1 id="page-title" class="text-2xl font-bold text-gray-800">ภาพรวม</h1>
-                </div>
-                <div class="flex items-center">
-                    <span id="user-display" class="mr-4 text-gray-700 hidden md:block"></span>
-                    <button id="logout-button" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none shadow-md transition-transform transform hover:scale-105">
+        <div id="sidebar" class="bg-red-800 text-white w-64 flex flex-col fixed inset-y-0 left-0 transform -translate-x-full lg:relative lg:translate-x-0 transition duration-200 ease-in-out z-30">
+            <div class="flex-grow flex flex-col">
+                <a href="#dashboard" class="text-white flex items-center space-x-2 p-4 flex-shrink-0">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Wny-logo.png/250px-Wny-logo.png" alt="Logo" class="w-14 h-auto object-contain">
+                    <span class="text-xl font-extrabold">ระบบการเรียนการสอนภาษาจีน</span>
+                </a>
+                <nav id="main-nav" class="flex-grow px-2 mt-4 space-y-1 overflow-y-auto">
+                    <!-- Menus will be injected here -->
+                </nav>
+                <div class="flex-shrink-0 p-4 border-t border-red-700">
+                    <div id="user-profile" class="text-center bg-red-900 p-3 rounded-lg">
+                        <div id="user-name" class="font-bold truncate"></div>
+                        <div id="user-role" class="text-sm text-red-300"></div>
+                    </div>
+                    <button id="logout-btn" class="w-full mt-2 bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
                         ออกจากระบบ
                     </button>
                 </div>
-            </header>
-
-            <!-- Page Content -->
-            <div class="p-6">
-                <!-- Dashboard View -->
-                <div id="dashboard-view" class="page-view">
-                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Card 1 -->
-                        <div class="p-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-semibold">รายวิชาที่สอน</h3>
-                                    <p class="text-4xl font-bold mt-2" id="course-count">0</p>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-50" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 011.087.017L10 10.589l3.663-2.521a.999.999 0 011.087-.017L17 6.921a1 1 0 000-1.84l-7-3zM3 9.366L10 14l7-4.634v2.978a1 1 0 01-1.727.687L10 13.589l-5.273 3.436A1 1 0 013 16.344V9.366z" /></svg>
-                            </div>
-                        </div>
-                         <!-- Card 2 -->
-                        <div class="p-6 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-                             <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-semibold">จำนวนนักเรียน</h3>
-                                    <p class="text-4xl font-bold mt-2" id="student-count">0</p>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-50" viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0110 9c-1.55 0-2.958.5-4.07 1.33a6.97 6.97 0 00-1.5 4.33c0 .34.024.673.07 1h10.86zM10 20a10 10 0 100-20 10 10 0 000 20z" /></svg>
-                            </div>
-                        </div>
-                        <!-- Card 3 -->
-                        <div class="p-6 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-xl shadow-lg transform hover:scale-105 transition-transform">
-                             <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-semibold">งานที่ค้างส่ง</h3>
-                                    <p class="text-4xl font-bold mt-2" id="pending-assignments">0</p>
-                                </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 opacity-50" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lesson Content View -->
-                <div id="lessons-view" class="hidden page-view">
-                    <div class="bg-white p-6 rounded-xl shadow-md">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">เนื้อหาบทเรียน</h2>
-                             <button id="add-lesson-btn" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-transform transform hover:scale-105">เพิ่มเนื้อหา</button>
-                        </div>
-                        <p class="mb-6 text-gray-600">เนื้อหาบทเรียน (ตัวอย่าง)</p>
-                        <div id="lesson-list" class="space-y-3">
-                            <!-- Lesson items will be injected here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Assignments View -->
-                <div id="assignments-view" class="hidden page-view">
-                     <div class="bg-white p-6 rounded-xl shadow-md">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800">ภาระงาน/ชิ้นงาน</h2>
-                            <button id="add-assignment-btn" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-transform transform hover:scale-105">เพิ่มชิ้นงานใหม่</button>
-                        </div>
-                        <div id="assignment-list" class="space-y-6">
-                            <!-- Assignment cards will be injected here -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Submission Tracking View -->
-                <div id="submissions-view" class="hidden page-view">
-                    <div class="bg-white p-6 rounded-xl shadow-md">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">เช็คการส่งงาน</h2>
-                        <div class="flex flex-wrap gap-4 mb-6">
-                            <select id="class-filter" class="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"></select>
-                            <select id="assignment-filter" class="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"></select>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white text-base">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">เลขที่</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">รหัสนักเรียน</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่อ-สกุล</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">สถานะ</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">คะแนน</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="submission-table-body">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Manage Students View -->
-                <div id="students-view" class="hidden page-view">
-                     <div class="bg-white p-6 rounded-xl shadow-md">
-                         <h2 class="text-2xl font-bold text-gray-800 mb-4">จัดการนักเรียน</h2>
-                         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                             <select id="student-class-filter" class="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none w-full sm:w-auto"></select>
-                             <div class="flex gap-2">
-                                <a href="data:text/csv;charset=utf-8,%E0%B8%A3%E0%B8%AB%E0%B8%B1%E0%B8%AA%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%88%E0%B8%B3%E0%B8%95%E0%B8%B1%E0%B8%A7,%E0%B9%80%E0%B8%A5%E0%B8%82%E0%B8%97%E0%B8%B5%E0%B9%88,%E0%B8%8A%E0%B8%B7%E0%B9%88%E0%B8%AD-%E0%B8%99%E0%B8%B2%E0%B8%A1%E0%B8%AA%E0%B8%81%E0%B8%B8%E0%B8%A5%0A12345,1,%E0%B8%99%E0%B8%B2%E0%B8%A2%E0%B8%95%E0%B8%B1%E0%B8%A7%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87 %E0%B9%80%E0%B8%A3%E0%B8%B5%E0%B8%A2%E0%B8%99%E0%B8%94%E0%B8%B5" download="student_template.csv" class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md transition-transform transform hover:scale-105">ดาวน์โหลดแม่แบบ</a>
-                                <label for="student-upload" class="cursor-pointer px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-transform transform hover:scale-105">
-                                    อัปโหลด Excel/CSV
-                                    <input type="file" id="student-upload" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                                 </label>
-                             </div>
-                         </div>
-                         <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white text-base">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">เลขที่</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">รหัสนักเรียน</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่อ-สกุล</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="student-table-body"></tbody>
-                            </table>
-                        </div>
-                     </div>
-                </div>
-
-                 <!-- Manage Teachers View (Super Admin Only) -->
-                <div id="teachers-view" class="hidden page-view">
-                    <div class="bg-white p-6 rounded-xl shadow-md">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-2xl font-bold text-gray-800">จัดการครูผู้สอน</h2>
-                            <button id="add-teacher-btn" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-transform transform hover:scale-105">เพิ่มครูผู้สอน</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white text-base">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่อ-สกุล</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่อผู้ใช้</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">จัดการ</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="teacher-table-body">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Profile and Courses View -->
-                <div id="profile-view" class="hidden page-view">
-                    <div class="bg-white p-6 rounded-xl shadow-md">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-6">ข้อมูลส่วนตัวและรายวิชา</h2>
-                        <div class="mb-8 p-4 border rounded-lg bg-gray-50">
-                            <h3 class="text-xl font-semibold mb-2 text-gray-700">ข้อมูลครูผู้สอน</h3>
-                            <p><strong>ชื่อ-สกุล:</strong> <span id="profile-name" class="text-gray-600"></span></p>
-                            <p><strong>ชื่อผู้ใช้:</strong> <span id="profile-username" class="text-gray-600"></span></p>
-                        </div>
-                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-semibold text-gray-700">รายวิชาของฉัน</h3>
-                             <button id="add-course-btn" class="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 shadow-md transition-transform transform hover:scale-105">เพิ่มรายวิชา</button>
-                        </div>
-                        <div id="my-courses-list" class="space-y-4">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Student's Submissions View -->
-                <div id="my-submissions-view" class="hidden page-view">
-                    <div class="bg-white p-6 rounded-xl shadow-md">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">สถานะการส่งงานของฉัน</h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white text-base">
-                                <thead class="table-header">
-                                    <tr>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">รายวิชา</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">ชื่องาน</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">สถานะ</th>
-                                        <th class="py-3 px-4 text-left font-semibold text-gray-600">คะแนน</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="my-submission-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
             </div>
-        </main>
-    </div>
+        </div>
 
-    <!-- Modals -->
-    <!-- Add/Edit Student Modal -->
-    <div id="student-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">
-        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg p-6 m-4">
-            <h3 id="student-modal-title" class="text-2xl font-bold mb-6 text-gray-800">แก้ไขข้อมูลนักเรียน</h3>
-            <form id="student-form">
-                <input type="hidden" id="student-original-id">
-                <input type="hidden" id="student-class-id">
-                <input type="hidden" id="student-row-index">
-                <div class="mb-4">
-                    <label for="student-number" class="block text-base font-medium text-gray-700">เลขที่</label>
-                    <input type="number" id="student-number" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="student-code" class="block text-base font-medium text-gray-700">รหัสนักเรียน (Username)</label>
-                    <input type="text" id="student-code" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="student-name" class="block text-base font-medium text-gray-700">ชื่อ-นามสกุล</label>
-                    <input type="text" id="student-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" required>
-                </div>
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancel-student" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
-                    <button type="submit" class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-md">บันทึก</button>
-                </div>
-            </form>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+             <header class="flex justify-between items-center p-4 bg-white border-b-2 border-red-100">
+                <button id="mobile-menu-button" class="lg:hidden text-gray-500 focus:outline-none z-10">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+                <div id="page-title" class="text-2xl font-bold text-red-800">แดชบอร์ด</div>
+                <div id="header-actions"></div>
+            </header>
+            <main id="main-content" class="flex-1 overflow-x-hidden overflow-y-auto bg-red-50 p-6">
+                <!-- Content will be injected here -->
+            </main>
         </div>
     </div>
     
-    <!-- Add/Edit Assignment Modal -->
-    <div id="assignment-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">
-        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg p-6 m-4">
-            <h3 id="assignment-modal-title" class="text-2xl font-bold mb-6 text-gray-800">เพิ่มชิ้นงานใหม่</h3>
-            <form id="assignment-form">
-                <input type="hidden" id="assignment-id">
-                <div class="mb-4">
-                    <label for="assignment-title" class="block text-base font-medium text-gray-700">หัวข้อชิ้นงาน</label>
-                    <input type="text" id="assignment-title" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" required>
-                </div>
-                <div class="mb-4">
-                    <label for="assignment-course" class="block text-base font-medium text-gray-700">สำหรับรายวิชา</label>
-                    <select id="assignment-course" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500" required></select>
-                </div>
-                <div class="mb-4">
-                    <label for="assignment-description" class="block text-base font-medium text-gray-700">รายละเอียด</label>
-                    <textarea id="assignment-description" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label for="assignment-image" class="block text-base font-medium text-gray-700">รูปตัวอย่าง (URL)</label>
-                    <input type="url" id="assignment-image" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
-                </div>
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancel-assignment" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
-                    <button type="submit" class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-md">บันทึก</button>
-                </div>
-            </form>
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-100 to-red-200">
+        <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md text-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Wny-logo.png/250px-Wny-logo.png" alt="Logo" class="w-32 mx-auto mb-6 object-contain">
+            <h1 class="text-3xl font-bold text-red-800 mb-2">ยินดีต้อนรับ</h1>
+            <p class="text-gray-500 mb-8">กรุณาลงชื่อเข้าสู่ระบบ</p>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="รหัสนักเรียน / ชื่อผู้ใช้" class="w-full px-4 py-3 rounded-lg bg-gray-100 border-2 border-transparent focus:border-red-400 focus:outline-none">
+                <input type="password" id="password" placeholder="รหัสผ่าน" class="w-full px-4 py-3 rounded-lg bg-gray-100 border-2 border-transparent focus:border-red-400 focus:outline-none">
+            </div>
+            <button id="login-btn" class="w-full mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
+                ลงชื่อเข้าใช้
+            </button>
+             <p id="login-error" class="text-red-500 mt-4 text-sm hidden"></p>
         </div>
     </div>
 
-    <!-- Update Submission Modal -->
-    <div id="submission-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50">
-         <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-sm p-6 m-4">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800">อัปเดตสถานะ</h3>
-            <p class="mb-2 text-base"><strong>นักเรียน:</strong> <span id="submission-student-name" class="text-gray-600"></span></p>
-            <p class="mb-6 text-base"><strong>งาน:</strong> <span id="submission-assignment-title" class="text-gray-600"></span></p>
-            <form id="submission-form">
-                 <input type="hidden" id="submission-student-id">
-                 <input type="hidden" id="submission-assignment-id">
-                <div class="mb-4">
-                    <label for="submission-status" class="block text-base font-medium text-gray-700">สถานะ</label>
-                    <select id="submission-status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
-                        <option value="ค้างส่ง">ค้างส่ง</option>
-                        <option value="ส่งแล้ว">ส่งแล้ว</option>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-white"></div>
+    </div>
+    
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 hidden p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg max-h-full overflow-y-auto">
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] hidden p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 m-4 text-center">
+            <h3 id="confirm-modal-title" class="text-2xl font-bold mb-4 text-gray-800">ยืนยันการกระทำ</h3>
+            <p id="confirm-modal-text" class="mb-8 text-gray-600">คุณแน่ใจหรือไม่ว่าต้องการดำเนินการต่อ?</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-cancel-btn" class="px-8 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
+                <button id="confirm-action-btn" class="px-8 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-md">ยืนยัน</button>
+            </div>
+        </div>
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHVXSmeUGB77QcAx56Q-35YkIShkP-_K99kCRM_imVVcC_UrxBuojj6i853zCz_aI/exec'; 
+
+    let state = { currentUser: null, database: null, currentPage: 'dashboard' };
+
+    // UI Elements
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginError = document.getElementById('login-error');
+    const mainContent = document.getElementById('main-content');
+    const pageTitle = document.getElementById('page-title');
+    const headerActions = document.getElementById('header-actions');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+    const sidebar = document.getElementById('sidebar');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mainNav = document.getElementById('main-nav');
+
+    async function fetchData(params = {}) {
+        loadingOverlay.classList.remove('hidden');
+        const url = new URL(WEB_APP_URL);
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        
+        try {
+            const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const result = await response.json();
+            if (result.status === 'error') throw new Error(result.message);
+            return result;
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            alert(`เกิดข้อผิดพลาดในการเชื่อมต่อ: ${error.message}`);
+            return null;
+        } finally {
+            loadingOverlay.classList.add('hidden');
+        }
+    }
+
+    function handleLogin() {
+        loginError.classList.add('hidden');
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!username || !password) {
+            showError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'); return;
+        }
+        const user = state.database.users.find(u => u.username.toString().trim() === username && u.password.toString().trim() === password);
+        if (user) {
+            state.currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            initializeApp();
+        } else {
+            showError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+        }
+    }
+
+    function handleLogout() {
+        state = { currentUser: null, database: null, currentPage: 'dashboard' };
+        localStorage.removeItem('currentUser');
+        loginScreen.style.display = 'flex';
+        appContainer.style.display = 'none';
+        usernameInput.value = '';
+        passwordInput.value = '';
+    }
+
+    function checkLoggedInUser() {
+        const user = localStorage.getItem('currentUser');
+        if (user) { state.currentUser = JSON.parse(user); return true; }
+        return false;
+    }
+    
+    function showError(message) {
+        loginError.textContent = message;
+        loginError.classList.remove('hidden');
+    }
+
+    async function main() {
+        loadingOverlay.classList.remove('hidden');
+        const result = await fetchData({ action: 'getAllData' });
+        loadingOverlay.classList.add('hidden');
+        if (result && result.data) {
+            state.database = result.data;
+            if (checkLoggedInUser()) { initializeApp(); } 
+            else { loginScreen.style.display = 'flex'; }
+        } else {
+           showError('ไม่สามารถโหลดข้อมูลเริ่มต้นของระบบได้');
+        }
+    }
+
+    function initializeApp() {
+        loginScreen.style.display = 'none';
+        appContainer.style.display = 'flex';
+        setupUIForRole();
+        navigateTo(window.location.hash || '#dashboard');
+    }
+    
+    function setupUIForRole() {
+        const { currentUser } = state;
+        const isSuperAdmin = currentUser.role === 'super-admin';
+        const isTeacher = currentUser.role === 'teacher';
+        const isStudent = currentUser.role === 'student';
+
+        let menuHtml = '';
+        if (isSuperAdmin || isTeacher) {
+            menuHtml += `<a href="#dashboard" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-home w-6 text-center"></i><span class="ml-2">แดชบอร์ด</span></a>`;
+            menuHtml += `<a href="#lessons" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-book-open w-6 text-center"></i><span class="ml-2">เนื้อหาบทเรียน</span></a>`;
+            menuHtml += `<a href="#assignments" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-tasks w-6 text-center"></i><span class="ml-2">ภาระงาน/ชิ้นงาน</span></a>`;
+            menuHtml += `<a href="#submissions" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-clipboard-check w-6 text-center"></i><span class="ml-2">เช็คการส่งงาน</span></a>`;
+            menuHtml += `<a href="#students" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-users w-6 text-center"></i><span class="ml-2">จัดการนักเรียน</span></a>`;
+        }
+        if (isSuperAdmin) {
+            menuHtml += `<div class="px-4 pt-4 pb-2"><span class="text-xs text-red-300 uppercase">Super Admin</span></div>`;
+            menuHtml += `<a href="#teachers" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-chalkboard-teacher w-6 text-center"></i><span class="ml-2">จัดการครูผู้สอน</span></a>`;
+            menuHtml += `<a href="#courses" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-book w-6 text-center"></i><span class="ml-2">จัดการรายวิชา</span></a>`;
+        }
+        if (isStudent) {
+            menuHtml += `<a href="#lessons" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-book-open w-6 text-center"></i><span class="ml-2">เนื้อหาบทเรียน</span></a>`;
+            menuHtml += `<a href="#assignments" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-tasks w-6 text-center"></i><span class="ml-2">ภาระงาน/ชิ้นงาน</span></a>`;
+            menuHtml += `<a href="#student-submissions" class="nav-link flex items-center py-2.5 px-4 rounded transition duration-200 hover:bg-red-700"><i class="fas fa-user-check w-6 text-center"></i><span class="ml-2">สถานะการส่งงาน</span></a>`;
+        }
+        mainNav.innerHTML = menuHtml;
+        
+        document.getElementById('user-name').textContent = currentUser.name;
+        let roleText = isSuperAdmin ? 'ผู้ดูแลระบบหลัก' : isTeacher ? 'ครูผู้สอน' : `นักเรียนห้อง ${currentUser.classId}`;
+        document.getElementById('user-role').textContent = roleText;
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(e.currentTarget.getAttribute('href'));
+            });
+        });
+    }
+
+    function navigateTo(hash) {
+        const { currentUser } = state;
+        const page = hash.substring(1);
+
+        const allowedPages = {
+            'super-admin': ['dashboard', 'lessons', 'assignments', 'submissions', 'students', 'teachers', 'courses'],
+            'teacher': ['dashboard', 'lessons', 'assignments', 'submissions', 'students'],
+            'student': ['lessons', 'assignments', 'student-submissions']
+        };
+
+        if (!allowedPages[currentUser.role] || !allowedPages[currentUser.role].includes(page)) {
+            hash = '#dashboard';
+            if(currentUser.role === 'student') hash = '#lessons';
+        }
+        
+        window.location.hash = hash;
+        state.currentPage = hash.substring(1);
+        renderPage(state.currentPage);
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.toggle('bg-red-900', link.getAttribute('href') === hash);
+        });
+        
+        if (!sidebar.classList.contains('-translate-x-full')) {
+           mobileMenuButton.click();
+        }
+    }
+
+    function renderPage(page) {
+        mainContent.innerHTML = ''; 
+        headerActions.innerHTML = '';
+        const renderMap = {
+            'dashboard': { title: 'แดชบอร์ด', renderFunc: renderDashboard },
+            'lessons': { title: 'เนื้อหาบทเรียน', renderFunc: renderLessons },
+            'assignments': { title: 'ภาระงาน/ชิ้นงาน', renderFunc: renderAssignments },
+            'submissions': { title: 'เช็คการส่งงาน', renderFunc: renderSubmissions },
+            'students': { title: 'จัดการนักเรียน', renderFunc: renderStudentManagement },
+            'student-submissions': { title: 'สถานะการส่งงาน', renderFunc: renderStudentSubmissions },
+            'teachers': { title: 'จัดการครูผู้สอน', renderFunc: renderManageTeachers },
+            'courses': { title: 'จัดการรายวิชาทั้งหมด', renderFunc: renderManageCourses }
+        };
+
+        const pageConfig = renderMap[page];
+        if (pageConfig) {
+            pageTitle.textContent = pageConfig.title;
+            pageConfig.renderFunc();
+        } else {
+            pageTitle.textContent = 'ไม่พบหน้า';
+            mainContent.innerHTML = `<p>ไม่พบหน้าที่คุณร้องขอ</p>`;
+        }
+    }
+
+    function getVisibleCourses() {
+        const { currentUser, database } = state;
+        if (currentUser.role === 'super-admin') return database.courses;
+        if (currentUser.role === 'teacher') return database.courses.filter(c => c.teacherId == currentUser.id);
+        if (currentUser.role === 'student') return database.courses.filter(c => c.rooms && c.rooms.includes(currentUser.classId));
+        return [];
+    }
+
+    // --- Page Render Functions ---
+    
+    function renderDashboard() {
+        const { currentUser, database } = state;
+        const visibleCourses = getVisibleCourses();
+        const allVisibleRooms = [...new Set(visibleCourses.flatMap(c => c.rooms || []))];
+        const studentCount = allVisibleRooms.reduce((acc, room) => acc + (database.students[room]?.length || 0), 0);
+        
+        let totalSubmissionsPossible = 0;
+        visibleCourses.forEach(course => {
+            const assignmentsForCourse = database.assignments.filter(a => a.courseId == course.id).length;
+            (course.rooms || []).forEach(room => {
+                const studentsInRoom = database.students[room]?.length || 0;
+                totalSubmissionsPossible += studentsInRoom * assignmentsForCourse;
+            });
+        });
+        const completedSubmissions = database.submissions.filter(s => {
+             const assignment = database.assignments.find(a => a.id == s.assignmentId);
+             if(!assignment) return false;
+             const course = visibleCourses.find(c => c.id == assignment.courseId);
+             return course && s.status === 'ส่งแล้ว';
+        }).length;
+
+        const pendingSubmissions = totalSubmissionsPossible - completedSubmissions;
+        const teacherCount = database.users.filter(u => u.role === 'teacher').length;
+
+        mainContent.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                ${currentUser.role === 'super-admin' ? `<div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4"><div class="bg-purple-100 p-4 rounded-full"><i class="fas fa-chalkboard-teacher fa-2x text-purple-500"></i></div><div><p class="text-gray-500">ครูผู้สอน</p><p class="text-3xl font-bold">${teacherCount}</p></div></div>` : ''}
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4"><div class="bg-red-100 p-4 rounded-full"><i class="fas fa-book fa-2x text-red-500"></i></div><div><p class="text-gray-500">รายวิชา</p><p class="text-3xl font-bold">${visibleCourses.length}</p></div></div>
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4"><div class="bg-blue-100 p-4 rounded-full"><i class="fas fa-users fa-2x text-blue-500"></i></div><div><p class="text-gray-500">นักเรียน</p><p class="text-3xl font-bold">${studentCount}</p></div></div>
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4"><div class="bg-yellow-100 p-4 rounded-full"><i class="fas fa-exclamation-triangle fa-2x text-yellow-500"></i></div><div><p class="text-gray-500">งานค้างส่ง</p><p class="text-3xl font-bold">${pendingSubmissions}</p></div></div>
+            </div>`;
+    }
+    
+    // ★★★ All other render functions (renderLessons, renderAssignments, etc.) are the same as the previous correct version,
+    // they are omitted here for brevity but are present in the full file. The logic for adding buttons to headerActions
+    // and implementing modals are also included. I will show the new and fixed ones below.
+
+    function renderLessons() {
+        if (state.currentUser.role !== 'student') {
+             headerActions.innerHTML = `<button id="add-lesson-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"><i class="fas fa-plus mr-2"></i>เพิ่มลิงก์เนื้อหา</button>`;
+             document.getElementById('add-lesson-btn').onclick = showAddLessonModal;
+        }
+
+        const userCourses = getVisibleCourses();
+        let html = `<div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg mb-6" role="alert"><p class="font-bold">หมายเหตุ</p><p>เนื้อหาจาก Google Drive จะปรากฏอัตโนมัติเมื่อท่านเพิ่มไฟล์ลงในโฟลเดอร์ที่ตรงกับรหัสวิชา</p></div>`;
+
+        if (userCourses.length === 0) {
+            html += '<p class="text-gray-500">ยังไม่มีรายวิชาที่กำหนด</p>';
+        } else {
+             userCourses.forEach(course => {
+                const lessons = state.database.lessons[course.id] || [];
+                html += `
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                        <h2 class="text-2xl font-bold text-red-800 mb-4">${course.name} (${course.code})</h2>
+                        ${lessons.length > 0 ? `<ul class="space-y-3">${lessons.map(lesson => {
+                            const icon = lesson.isDriveFile ? 'fa-google-drive' : 'fa-link';
+                            const color = lesson.isDriveFile ? 'text-yellow-500' : 'text-blue-500';
+                            return `<li class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <span class="text-gray-700"><i class="fab ${icon} ${color} mr-3"></i>${lesson.name}</span>
+                                <a href="${lesson.url}" target="_blank" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm">
+                                <i class="fas fa-external-link-alt mr-1"></i> เปิดลิงก์</a></li>`
+                        }).join('')}</ul>` : '<p class="text-gray-500">ยังไม่มีเนื้อหาในรายวิชานี้</p>'}
+                    </div>`;
+            });
+        }
+        mainContent.innerHTML = html;
+    }
+    
+    function renderAssignments() {
+        if (state.currentUser.role !== 'student') {
+            headerActions.innerHTML = `<button id="add-assignment-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"><i class="fas fa-plus mr-2"></i>เพิ่มภาระงาน</button>`;
+            document.getElementById('add-assignment-btn').onclick = showAddAssignmentModal;
+        }
+        // ... rest of the function is the same
+        const userCourses = getVisibleCourses();
+        let html = '';
+        if (userCourses.length === 0) {
+            html = '<p class="text-gray-500">ยังไม่มีรายวิชาที่กำหนด</p>';
+        } else {
+            userCourses.forEach(course => {
+                const assignments = state.database.assignments.filter(a => a.courseId == course.id);
+                html += `
+                    <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                        <h2 class="text-2xl font-bold text-red-800 mb-4">${course.name} (${course.code})</h2>
+                        ${assignments.length > 0 ? `<div class="space-y-4">${assignments.map(assignment => `<div class="border border-gray-200 p-4 rounded-lg"><div class="flex justify-between items-start"><div><h3 class="font-bold text-lg">${assignment.title}</h3><p class="text-gray-600 mt-1 whitespace-pre-wrap">${assignment.description}</p></div>${state.currentUser.role === 'student' ? renderStudentAssignmentStatus(assignment.id) : ''}</div>${assignment.imageUrl ? `<img src="${assignment.imageUrl}" alt="ตัวอย่างงาน" class="mt-4 rounded-lg max-w-xs">` : ''}</div>`).join('')}</div>` : '<p class="text-gray-500">ยังไม่มีภาระงานในรายวิชานี้</p>'}
+                    </div>`;
+            });
+        }
+        mainContent.innerHTML = html;
+    }
+
+    function renderStudentManagement() {
+        if (state.currentUser.role !== 'student') {
+            headerActions.innerHTML = `<button id="add-student-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"><i class="fas fa-user-plus mr-2"></i>เพิ่มนักเรียน</button>`;
+            document.getElementById('add-student-btn').onclick = showAddStudentModal;
+        }
+         // ... rest of the function is the same
+        const teacherRooms = [...new Set(getVisibleCourses().flatMap(c => c.rooms))].sort();
+        mainContent.innerHTML = `
+             <div class="mb-6 bg-white p-4 rounded-xl shadow flex space-x-4 items-end">
+                 <div>
+                    <label for="student-room-filter" class="block text-sm font-medium text-gray-700">เลือกห้อง</label>
+                    <select id="student-room-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                        <option value="">-- เลือกห้องเรียน --</option>
+                        ${teacherRooms.map(r => `<option value="${r}">${r}</option>`).join('')}
                     </select>
                 </div>
-                <div class="mb-4">
-                    <label for="submission-score" class="block text-base font-medium text-gray-700">คะแนน</label>
-                    <input type="number" id="submission-score" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500">
-                </div>
-                <div class="flex justify-end gap-4 mt-8">
-                    <button type="button" id="cancel-submission" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
-                    <button type="submit" class="px-6 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition shadow-md">บันทึก</button>
-                </div>
-            </form>
-        </div>
-    </div>
+             </div>
+             <div id="student-list-container"></div>`;
+        document.getElementById('student-room-filter').addEventListener('change', (e) => renderStudentList(e.target.value));
+    }
+    
+    function renderManageTeachers() {
+        if (state.currentUser.role === 'super-admin') {
+            headerActions.innerHTML = `<button id="add-teacher-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"><i class="fas fa-user-plus mr-2"></i>เพิ่มครูผู้สอน</button>`;
+            document.getElementById('add-teacher-btn').onclick = showAddTeacherModal;
+        }
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        
-        // --- Google Apps Script API Integration ---
-        // IMPORTANT: Replace this URL with the one you get after deploying the Google Apps Script
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzRxgg6-T9fe8MQVEt2upW87hxYQQK4dl3gKV9IWtGfdM0pIWQCwRhcZUBW8zyKTz6Q/exec';
+        const teachers = state.database.users.filter(u => u.role === 'teacher');
+        mainContent.innerHTML = `
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${teachers.map(t => `<tr><td class="px-6 py-4">${t.id}</td><td class="px-6 py-4">${t.username}</td><td class="px-6 py-4">${t.name}</td><td class="px-6 py-4"><button data-teacher-id="${t.id}" data-teacher-name="${t.name}" class="delete-teacher-btn text-red-500 hover:text-red-700">ลบ</button></td></tr>`).join('')}</tbody></table></div>
+            </div>`;
 
-        // This object will hold the data fetched from Google Sheets.
-        let liveDatabase = {
-            users: [],
-            courses: [],
-            students: {},
-            lessons: [],
-            assignments: [],
-            submissions: [],
+        document.querySelectorAll('.delete-teacher-btn').forEach(btn => btn.onclick = (e) => {
+            const { teacherId, teacherName } = e.target.dataset;
+            openConfirmationModal(
+                'ยืนยันการลบ',
+                `คุณแน่ใจหรือไม่ว่าต้องการลบครู "${teacherName}"?`,
+                () => handleTeacherDelete(teacherId)
+            );
+        });
+    }
+
+    async function handleTeacherDelete(teacherId) {
+        const result = await fetchData({ action: 'deleteTeacher', teacherId });
+        if(result && result.status === 'success') {
+            state.database.users = state.database.users.filter(u => u.id !== teacherId);
+            renderManageTeachers();
+        } else {
+            alert(`ไม่สามารถลบครูได้: ${result?.message || 'Error'}`);
+        }
+    }
+    
+    // --- ★★★ NEW MODAL ★★★ ---
+    function showAddLessonModal() {
+        const visibleCourses = getVisibleCourses();
+        modalContent.innerHTML = `
+            <h2 class="text-2xl font-bold mb-4">เพิ่มลิงก์เนื้อหาใหม่</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 required-label">รายวิชา</label>
+                    <select id="add-lesson-course" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                        ${visibleCourses.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+                    </select>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อลิงก์/หัวข้อ</label><input type="text" id="add-lesson-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">URL</label><input type="url" id="add-lesson-url" placeholder="https://..." class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-lesson-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">บันทึก</button></div>`;
+        modal.classList.remove('hidden');
+        document.getElementById('save-lesson-btn').onclick = handleAddNewLesson;
+    }
+
+    async function handleAddNewLesson() {
+        const courseId = document.getElementById('add-lesson-course').value;
+        const name = document.getElementById('add-lesson-name').value.trim();
+        const url = document.getElementById('add-lesson-url').value.trim();
+        if (!courseId || !name || !url) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน'); return;
+        }
+        try {
+            new URL(url);
+        } catch (_) {
+            alert('รูปแบบ URL ไม่ถูกต้อง'); return;
+        }
+
+        const result = await fetchData({ action: 'addLesson', courseId, name, url });
+        if (result && result.status === 'success') {
+            if (!state.database.lessons[courseId]) state.database.lessons[courseId] = [];
+            state.database.lessons[courseId].push(result.newRecord);
+            modal.classList.add('hidden');
+            renderLessons();
+        } else { alert('ไม่สามารถเพิ่มลิงก์ได้'); }
+    }
+    
+    // --- Confirmation Modal Logic ---
+    function openConfirmationModal(title, text, onConfirm) {
+        const confirmModal = document.getElementById('confirm-modal');
+        document.getElementById('confirm-modal-title').textContent = title;
+        document.getElementById('confirm-modal-text').textContent = text;
+        confirmModal.classList.remove('hidden');
+
+        const confirmBtn = document.getElementById('confirm-action-btn');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+        const confirmHandler = () => { onConfirm(); close(); };
+        const close = () => { 
+            confirmModal.classList.add('hidden');
+            confirmBtn.removeEventListener('click', confirmHandler);
         };
 
-        // --- State Management ---
-        let appState = {
-            currentUser: null,
-            currentView: 'dashboard-view',
-            studentCourses: [], 
-        };
+        confirmBtn.addEventListener('click', confirmHandler, { once: true });
+        cancelBtn.addEventListener('click', close, { once: true });
+    }
 
-        // --- DOM Elements ---
-        const loginPage = document.getElementById('login-page');
-        const appElement = document.getElementById('app');
-        const loginForm = document.getElementById('login-form');
-        const loginError = document.getElementById('login-error');
-        const userDisplay = document.getElementById('user-display');
-        const logoutButton = document.getElementById('logout-button');
-        const pageTitle = document.getElementById('page-title');
-        const mainContent = document.getElementById('main-content');
-        const sidebar = document.getElementById('sidebar');
-        const menuToggle = document.getElementById('menu-toggle');
-        const loader = document.getElementById('loader');
-        
-        const allViews = document.querySelectorAll('.page-view');
-        
-        showLoader(false); // Hide loader on initial load
+    // --- The rest of the functions for rendering and modals remain the same ---
+    // This is a placeholder for the other correct functions from previous versions
+    // like renderStudentList, showAddStudentModal, handleAddNewStudent, etc.
+    // They are included in the full file but omitted here for brevity.
+    function renderStudentAssignmentStatus(assignmentId){const e=state.database.submissions.find(e=>e.studentId==state.currentUser.studentId&&e.assignmentId==assignmentId),t=null==e?"ค้างส่ง":e.status,s="ส่งแล้ว"===t?"status-sent":"status-pending";return`<span class="status-badge ${s}">${t}</span>`}function renderSubmissions(){const e=getVisibleCourses();let t=`
+            <div class="mb-6 bg-white p-4 rounded-xl shadow flex flex-wrap gap-4 items-end">
+                 <div>
+                    <label for="course-filter" class="block text-sm font-medium text-gray-700">เลือกรายวิชา</label>
+                    <select id="course-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                        <option value="">-- ทั้งหมด --</option>
+                        ${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}
+                    </select>
+                </div>
+                 <div>
+                    <label for="room-filter" class="block text-sm font-medium text-gray-700">เลือกห้อง</label>
+                    <select id="room-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md">
+                         <option value="">-- ทั้งหมด --</option>
+                    </select>
+                </div>
+            </div>
+            <div id="submission-table-container"></div>`;mainContent.innerHTML=t;const s=document.getElementById("course-filter"),n=document.getElementById("room-filter");s.addEventListener("change",(()=>{const t=s.value;n.innerHTML='<option value="">-- ทั้งหมด --</option>',t&&(n.innerHTML+=e.find(e=>e.id==t).rooms.map(e=>`<option value="${e}">${e}</option>`).join("")),renderSubmissionTable()})),n.addEventListener("change",renderSubmissionTable),renderSubmissionTable()}function renderSubmissionTable(){const e=document.getElementById("submission-table-container"),t=document.getElementById("course-filter").value,s=document.getElementById("room-filter").value,n=getVisibleCourses();let a=[];s?a=state.database.students[s]||[]:t?(a=n.find(e=>e.id==t).rooms.flatMap(e=>state.database.students[e]||[])):(a=[...new Set(n.flatMap(e=>e.rooms))].flatMap(e=>state.database.students[e]||[]));const o=t?state.database.assignments.filter(e=>e.courseId==t):state.database.assignments.filter(e=>n.some(t=>t.id==e.courseId));let i=`<div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>${o.map(e=>`<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${e.title}</th>`).join("")}</tr></thead><tbody class="bg-white divide-y divide-gray-200">${a.sort(((e,t)=>e.เลขที่-t.เลขที่)).map((e=>{const t=state.database.users.find(t=>t.studentId==e.รหัสประจำตัว);return t?`<tr><td class="px-6 py-4 whitespace-nowrap font-medium text-gray-800">${e["ชื่อ-นามสกุล"]} <span class="text-gray-500 font-normal">(${e.เลขที่})</span></td>${o.map((s=>{const n=state.database.submissions.find(e=>e.studentId==t.studentId&&e.assignmentId==s.id),a=null!=n?n.status:"ค้างส่ง",o=null!=n?n.score:"";return`<td class="px-6 py-4 whitespace-nowrap"><select class="status-select border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"><option value="ค้างส่ง" ${"ค้างส่ง"===a?"selected":""}>ค้างส่ง</option><option value="ส่งแล้ว" ${"ส่งแล้ว"===a?"selected":""}>ส่งแล้ว</option></select><input type="text" value="${o}" placeholder="คะแนน" class="score-input mt-1 w-20 border-gray-300 rounded-md text-sm" data-student-id="${t.studentId}" data-assignment-id="${s.id}"></td>`})).join("")}</tr>`:""})).join("")}</tbody></table></div>`;e.innerHTML=a.length>0?i:'<div class="bg-white p-6 rounded-xl shadow-lg"><p class="text-gray-500">ไม่พบข้อมูลนักเรียน หรือยังไม่ได้เลือกรายวิชา/ห้องเรียน</p></div>',addSubmissionEventListeners()}function addSubmissionEventListeners(){document.querySelectorAll(".status-select, .score-input").forEach((e=>{e.addEventListener("change",(async e=>{const{studentId:t,assignmentId:s}=e.target.dataset,n=document.querySelector(`.status-select[data-student-id='${t}'][data-assignment-id='${s}']`).value,a=document.querySelector(`.score-input[data-student-id='${t}'][data-assignment-id='${s}']`).value;let o=state.database.submissions.find(e=>e.studentId==t&&e.assignmentId==s);o?(o.status=n,o.score=a):state.database.submissions.push({studentId:t,assignmentId:s,status:n,score:a}),await fetchData({action:"updateSubmission",studentId:t,assignmentId:s,status:n,score:a})}))}))}function renderStudentList(e){const t=document.getElementById("student-list-container");if(!e)return void(t.innerHTML='<p class="text-gray-500">กรุณาเลือกห้องเรียนเพื่อแสดงรายชื่อนักเรียน</p>');const s=(state.database.students[e]||[]).sort(((e,t)=>e.เลขที่-t.เลขที่));t.innerHTML=`
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h3 class="text-xl font-bold mb-4">รายชื่อนักเรียนห้อง ${e}</h3>
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">เลขที่</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสประจำตัว</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3"></th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${s.map(t=>`<tr><td class="px-6 py-4 whitespace-nowrap">${t.เลขที่}</td><td class="px-6 py-4 whitespace-nowrap">${t.รหัสประจำตัว}</td><td class="px-6 py-4 whitespace-nowrap">${t["ชื่อ-นามสกุล"]}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button class="edit-student-btn text-red-600 hover:text-red-900" data-room="${e}" data-row-index="${t.rowIndex}">แก้ไข</button></td></tr>`).join("")}</tbody></table></div></div>`,document.querySelectorAll(".edit-student-btn").forEach((t=>{t.addEventListener("click",(t=>{const{room:s,rowIndex:n}=t.target.dataset;showEditStudentModal(s,state.database.students[s].find(e=>e.rowIndex==n))}))}))}function showEditStudentModal(e,t){modalContent.innerHTML=`
+            <h2 class="text-2xl font-bold mb-4">แก้ไขข้อมูลนักเรียน</h2><p class="mb-4">ห้อง ${e}</p>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700">เลขที่</label><input type="text" id="edit-student-number" value="${t.เลขที่}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">รหัสประจำตัว</label><input type="text" id="edit-student-id" value="${t.รหัสประจำตัว}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label><input type="text" id="edit-student-name" value="${t["ชื่อ-นามสกุล"]}" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button id="cancel-edit-btn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-edit-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("cancel-edit-btn").onclick=()=>modal.classList.add("hidden"),document.getElementById("save-edit-btn").onclick=async()=>{const s=t.รหัสประจำตัว,n=document.getElementById("edit-student-number").value,a=document.getElementById("edit-student-id").value,o=document.getElementById("edit-student-name").value;t.เลขที่=n,t.รหัสประจำตัว=a,t["ชื่อ-นามสกุล"]=o,await fetchData({action:"updateStudent",classId:e,rowIndex:t.rowIndex,originalStudentId:s,studentId:a,number:n,name:o}),modal.classList.add("hidden"),renderStudentList(e)}}function renderStudentSubmissions(){const e=state.currentUser,t=getVisibleCourses();let s="";t.forEach((t=>{const n=state.database.assignments.filter(e=>e.courseId==t.id);n.length>0&&(s+=`<div class="bg-white p-6 rounded-xl shadow-lg mb-6"><h2 class="text-2xl font-bold text-red-800 mb-4">${t.name} (${t.code})</h2><div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชิ้นงาน</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${n.map((t=>{const n=state.database.submissions.find(s=>s.studentId==e.studentId&&s.assignmentId==t.id),a=null!=n?n.status:"ค้างส่ง",o=null!=n?n.score:"-",i="ส่งแล้ว"===a?"status-sent":"status-pending";return`<tr><td class="px-6 py-4 whitespace-nowrap">${t.title}</td><td class="px-6 py-4 whitespace-nowrap"><span class="status-badge ${i}">${a}</span></td><td class="px-6 py-4 whitespace-nowrap">${o}</td></tr>`})).join("")}</tbody></table></div></div>`)})),mainContent.innerHTML=s||'<p class="text-gray-500">ยังไม่มีงานที่ได้รับมอบหมาย</p>'}function showAddAssignmentModal(){const e=getVisibleCourses();modalContent.innerHTML=`
+            <h2 class="text-2xl font-bold mb-4">เพิ่มภาระงานใหม่</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 required-label">รายวิชา</label>
+                    <select id="add-assignment-course" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                        ${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}
+                    </select>
+                </div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">หัวข้อ</label><input type="text" id="add-assignment-title" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700">รายละเอียด</label><textarea id="add-assignment-desc" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></textarea></div>
+                <div><label class="block text-sm font-medium text-gray-700">URL รูปภาพตัวอย่าง (ถ้ามี)</label><input type="text" id="add-assignment-image" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-assignment-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-assignment-btn").onclick=handleAddNewAssignment}async function handleAddNewAssignment(){const e=document.getElementById("add-assignment-course").value,t=document.getElementById("add-assignment-title").value.trim(),s=document.getElementById("add-assignment-desc").value.trim(),n=document.getElementById("add-assignment-image").value.trim();if(!e||!t)return void alert("กรุณากรอกข้อมูลรายวิชาและหัวข้อให้ครบถ้วน");const a=await fetchData({action:"addAssignment",courseId:e,title:t,description:s,imageUrl:n});a&&"success"===a.status?(state.database.assignments.push(a.newRecord),modal.classList.add("hidden"),renderAssignments()):alert("ไม่สามารถเพิ่มภาระงานได้")}function showAddStudentModal(){const e=document.getElementById("student-room-filter")?.value;if(!e)return void alert("กรุณาเลือกห้องเรียนก่อนเพิ่มนักเรียน");modalContent.innerHTML=`
+            <h2 class="text-2xl font-bold mb-4">เพิ่มนักเรียนใหม่ - ห้อง ${e}</h2>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 required-label">เลขที่</label><input type="number" id="add-student-number" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">รหัสประจำตัว</label><input type="number" id="add-student-id" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-นามสกุล</label><input type="text" id="add-student-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <p class="text-sm text-gray-500 mt-4">หมายเหตุ: รหัสผ่านของนักเรียนจะถูกตั้งค่าให้เหมือนกับรหัสประจำตัวโดยอัตโนมัติ</p>
+            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-student-btn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-student-btn").onclick=()=>handleAddNewStudent(e)}async function handleAddNewStudent(e){const t=document.getElementById("add-student-number").value,s=document.getElementById("add-student-id").value,n=document.getElementById("add-student-name").value.trim();if(!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addStudent",classId:e,number:t,studentId:s,name:n});a&&"success"===a.status?(state.database.students[e]||(state.database.students[e]=[]),state.database.students[e].push(a.newStudentRecord),state.database.users.push(a.newUserRecord),modal.classList.add("hidden"),renderStudentList(e)):alert(`ไม่สามารถเพิ่มนักเรียนได้: ${null!=a?a.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}function renderManageCourses(){state.currentUser.role==="super-admin"&&(headerActions.innerHTML='<button id="add-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"><i class="fas fa-plus mr-2"></i>เพิ่มรายวิชาใหม่</button>',document.getElementById("add-course-btn").onclick=showAddCourseModal);const e=state.database.courses,t=state.database.users.filter(e=>"teacher"===e.role||"super-admin"===e.role);mainContent.innerHTML=`
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อรายวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">รหัสวิชา</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ห้อง</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ครูผู้สอน</th></tr></thead><tbody class="bg-white divide-y divide-gray-200">${e.map(e=>{const s=t.find(t=>t.id==e.teacherId);return`<tr><td class="px-6 py-4">${e.name}</td><td class="px-6 py-4">${e.code}</td><td class="px-6 py-4">${e.rooms.join(", ")}</td><td class="px-6 py-4">${s?s.name:"N/A"}</td></tr>`}).join("")}</tbody></table></div>
+            </div>`}function showAddCourseModal(){const e=state.database.users.filter(e=>"teacher"===e.role),t="super-admin"===state.currentUser.role;modalContent.innerHTML=`
+            <h2 class="text-2xl font-bold mb-4">เพิ่มรายวิชาใหม่</h2>
+            <div class="space-y-4">
+                ${t?`<div><label class="block text-sm font-medium text-gray-700 required-label">เลือกครูผู้สอน</label><select id="add-course-teacher" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">${e.map(e=>`<option value="${e.id}">${e.name}</option>`).join("")}</select></div>`:""}
+                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อรายวิชา</label><input type="text" id="add-course-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">รหัสวิชา</label><input type="text" id="add-course-code" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">ห้องที่สอน (คั่นด้วย ,)</label><input type="text" id="add-course-rooms" placeholder="เช่น ม.3/10, ม.3/11" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-course-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-course-btn").onclick=handleAddNewCourse}async function handleAddNewCourse(){const e="super-admin"===state.currentUser.role?document.getElementById("add-course-teacher").value:state.currentUser.id,t=document.getElementById("add-course-name").value.trim(),s=document.getElementById("add-course-code").value.trim(),n=document.getElementById("add-course-rooms").value.trim();if(!e||!t||!s||!n)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const a=await fetchData({action:"addCourse",teacherId:e,name:t,code:s,rooms:n});a&&"success"===a.status?(state.database.courses.push(a.newRecord),modal.classList.add("hidden"),"super-admin"===state.currentUser.role?renderManageCourses():renderDashboard()):alert(`ไม่สามารถเพิ่มรายวิชาได้: ${null!=a?a.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}function showAddTeacherModal(){modalContent.innerHTML=`
+            <h2 class="text-2xl font-bold mb-4">เพิ่มครูผู้สอนใหม่</h2>
+            <div class="space-y-4">
+                <div><label class="block text-sm font-medium text-gray-700 required-label">Username</label><input type="text" id="add-teacher-username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">Password</label><input type="text" id="add-teacher-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+                <div><label class="block text-sm font-medium text-gray-700 required-label">ชื่อ-สกุล</label><input type="text" id="add-teacher-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"></div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3"><button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">ยกเลิก</button><button id="save-teacher-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">บันทึก</button></div>`,modal.classList.remove("hidden"),document.getElementById("save-teacher-btn").onclick=handleAddNewTeacher}async function handleAddNewTeacher(){const e=document.getElementById("add-teacher-username").value.trim(),t=document.getElementById("add-teacher-password").value.trim(),s=document.getElementById("add-teacher-name").value.trim();if(!e||!t||!s)return void alert("กรุณากรอกข้อมูลให้ครบถ้วน");const n=await fetchData({action:"addTeacher",username:e,password:t,name:s});n&&"success"===n.status?(state.database.users.push(n.newRecord),modal.classList.add("hidden"),renderManageTeachers()):alert(`ไม่สามารถเพิ่มครูได้: ${null!=n?n.message:"ข้อผิดพลาดไม่ทราบสาเหตุ"}`)}
 
-        // --- Authentication & Data Loading ---
-        
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = e.target.username.value;
-            const password = e.target.password.value;
-            
-            showLoader(true);
-            loginError.classList.add('hidden');
-
-            try {
-                // Fetch all data from the backend on login attempt
-                const response = await fetch(`${WEB_APP_URL}?action=getAllData`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    liveDatabase = result.data;
-                    
-                    // Now, authenticate the user with the fetched data
-                    const user = liveDatabase.users.find(u => u.username === username && u.password == password); // Use == for potential type coercion from sheet
-                    
-                    if (user) {
-                        appState.currentUser = user;
-                        onLoginSuccess();
-                    } else {
-                        loginError.classList.remove('hidden');
-                    }
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (error) {
-                console.error("Login failed:", error);
-                loginError.textContent = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
-                loginError.classList.remove('hidden');
-            } finally {
-                showLoader(false);
-            }
-        });
-
-        function onLoginSuccess() {
-            loginPage.classList.add('hidden');
-            appElement.classList.remove('hidden');
-            initializeDashboard();
-        }
-        
-        logoutButton.addEventListener('click', () => {
-            // Reset state and UI
-            appState.currentUser = null;
-            appState.studentCourses = [];
-            liveDatabase = { users: [], courses: [], students: {}, lessons: [], assignments: [], submissions: [] };
-            loginPage.classList.remove('hidden');
-            appElement.classList.add('hidden');
-            loginForm.reset();
-        });
-
-
-        // --- Core Application Logic (Reads from liveDatabase) ---
-
-        function initializeDashboard() {
-            if (!appState.currentUser) return;
-            userDisplay.textContent = `ยินดีต้อนรับ, ${appState.currentUser.name}`;
-            
-            if (appState.currentUser.role === 'student') {
-                appState.studentCourses = liveDatabase.courses.filter(course => {
-                    return course.rooms && course.rooms.includes(appState.currentUser.classId)
-                });
-                navigateTo('lessons-view', 'เนื้อหาบทเรียน');
-            } else {
-                navigateTo('dashboard-view', 'ภาพรวม');
-            }
-            setupMenus();
-        }
-
-        // --- Render Functions (Reads from liveDatabase) ---
-        function renderDashboard() {
-            const teacherId = appState.currentUser.id;
-            const courses = liveDatabase.courses.filter(c => c.teacherId == teacherId);
-            const myRooms = courses.flatMap(c => c.rooms);
-            
-            const studentCount = Object.entries(liveDatabase.students)
-                .filter(([room, students]) => myRooms.includes(room))
-                .reduce((acc, [room, students]) => acc + (students ? students.length : 0), 0);
-
-            const myCourseIds = courses.map(c => c.id);
-            const myAssignmentIds = liveDatabase.assignments
-                .filter(a => myCourseIds.includes(a.courseId))
-                .map(a => a.id);
-
-            const pendingCount = liveDatabase.submissions
-                .filter(s => myAssignmentIds.includes(s.assignmentId) && s.status === 'ค้างส่ง')
-                .length;
-            
-            document.getElementById('course-count').textContent = courses.length;
-            document.getElementById('student-count').textContent = studentCount;
-            document.getElementById('pending-assignments').textContent = pendingCount;
-        }
-
-        function renderStudents() {
-            const classFilter = document.getElementById('student-class-filter');
-            const tableBody = document.getElementById('student-table-body');
-            const myRooms = liveDatabase.courses
-                .filter(c => c.teacherId == appState.currentUser.id)
-                .flatMap(c => c.rooms);
-            
-            classFilter.innerHTML = [...new Set(myRooms)].map(room => `<option value="${room}">${room}</option>`).join('');
-
-            function updateStudentTable() {
-                 const selectedClass = classFilter.value;
-                 const studentsInClass = liveDatabase.students[selectedClass] || [];
-                 tableBody.innerHTML = '';
-
-                 if (studentsInClass.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">ไม่พบข้อมูลนักเรียนในห้องนี้</td></tr>';
-                    return;
-                }
-                
-                 [...studentsInClass].sort((a,b) => a.number - b.number).forEach(student => {
-                     const row = document.createElement('tr');
-                     row.className = 'hover:bg-gray-50 transition-colors';
-                     row.innerHTML = `
-                        <td class="py-3 px-4 border-b border-gray-200">${student.number}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${student.studentId}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${student.name}</td>
-                        <td class="py-3 px-4 border-b border-gray-200 flex gap-4">
-                           <button class="edit-student-btn text-blue-600 hover:text-blue-800 font-medium" 
-                                data-original-id="${student.studentId}"
-                                data-class-id="${selectedClass}"
-                                data-row-index="${student.rowIndex}"
-                                data-number="${student.number}"
-                                data-code="${student.studentId}"
-                                data-name="${student.name}">แก้ไข</button>
-                           <button class="text-red-600 hover:text-red-800 font-medium">ลบ</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                 });
-
-                 document.querySelectorAll('.edit-student-btn').forEach(btn => btn.addEventListener('click', openStudentEditModal));
-            }
-             classFilter.addEventListener('change', updateStudentTable);
-             if (myRooms.length > 0) updateStudentTable();
-        }
-
-        function renderSubmissions() {
-            const classFilter = document.getElementById('class-filter');
-            const assignmentFilter = document.getElementById('assignment-filter');
-            const tableBody = document.getElementById('submission-table-body');
-
-            const teacherId = appState.currentUser.id;
-            const myCourses = liveDatabase.courses.filter(c => c.teacherId == teacherId);
-            const myRooms = [...new Set(myCourses.flatMap(c => c.rooms))];
-            
-            classFilter.innerHTML = myRooms.map(room => `<option value="${room}">${room}</option>`).join('');
-            
-            const myCourseIds = myCourses.map(c => c.id);
-            assignmentFilter.innerHTML = liveDatabase.assignments
-                .filter(a => myCourseIds.includes(a.courseId))
-                .map(a => `<option value="${a.id}">${a.title}</option>`).join('');
-
-            function updateTable() {
-                const selectedClass = classFilter.value;
-                const selectedAssignmentId = assignmentFilter.value;
-                const studentsInClass = liveDatabase.students[selectedClass] || [];
-                tableBody.innerHTML = '';
-
-                if (studentsInClass.length === 0 || !selectedAssignmentId) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">ไม่พบข้อมูลนักเรียนในห้องนี้ หรือยังไม่ได้เลือกชิ้นงาน</td></tr>';
-                    return;
-                }
-
-                [...studentsInClass].sort((a,b) => a.number - b.number).forEach(student => {
-                    const submission = liveDatabase.submissions.find(s => s.studentId == student.studentId && s.assignmentId == selectedAssignmentId);
-                    const status = submission ? submission.status : 'ค้างส่ง';
-                    const score = submission ? (submission.score != null ? submission.score : '-') : '-';
-                    const statusChip = status === 'ส่งแล้ว' 
-                        ? '<span class="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">ส่งแล้ว</span>' 
-                        : '<span class="px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">ค้างส่ง</span>';
-
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50 transition-colors';
-                    row.innerHTML = `
-                        <td class="py-3 px-4 border-b border-gray-200">${student.number}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${student.studentId}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${student.name}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${statusChip}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">${score}</td>
-                        <td class="py-3 px-4 border-b border-gray-200">
-                            <button class="edit-submission-btn px-4 py-2 text-sm text-white bg-red-600 rounded-md hover:bg-red-700" data-student-id="${student.studentId}" data-student-name="${student.name}" data-assignment-id="${selectedAssignmentId}">อัปเดต</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-                
-                 document.querySelectorAll('.edit-submission-btn').forEach(btn => {
-                    btn.addEventListener('click', openSubmissionModal);
-                });
-            }
-
-            classFilter.addEventListener('change', updateTable);
-            assignmentFilter.addEventListener('change', updateTable);
-            if(myRooms.length > 0) updateTable();
-        }
-
-        function renderAssignments() {
-            const list = document.getElementById('assignment-list');
-            list.innerHTML = '';
-            const isStudent = appState.currentUser.role === 'student';
-            document.getElementById('add-assignment-btn').style.display = isStudent ? 'none' : 'block';
-
-            let assignmentsToShow = [];
-            if (isStudent) {
-                const studentCourseIds = appState.studentCourses.map(c => c.id);
-                assignmentsToShow = liveDatabase.assignments.filter(assign => studentCourseIds.includes(assign.courseId));
-            } else {
-                const teacherCourseIds = liveDatabase.courses.filter(c => c.teacherId == appState.currentUser.id).map(c => c.id);
-                assignmentsToShow = liveDatabase.assignments.filter(assign => teacherCourseIds.includes(assign.courseId));
-            }
-
-            if (assignmentsToShow.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-4">ไม่พบภาระงาน</p>`;
-                return;
-            }
-
-            assignmentsToShow.forEach(assign => {
-                const course = liveDatabase.courses.find(c => c.id == assign.courseId);
-                let statusHtml = '';
-
-                if (isStudent) {
-                    const submission = liveDatabase.submissions.find(s => s.studentId == appState.currentUser.studentId && s.assignmentId == assign.id);
-                    const status = submission ? submission.status : 'ค้างส่ง';
-                    if (status === 'ส่งแล้ว') {
-                        statusHtml = `<div class="mt-3"><span class="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">ส่งแล้ว</span></div>`;
-                    } else {
-                        statusHtml = `<div class="mt-3"><span class="px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">ค้างส่ง</span></div>`;
-                    }
-                }
-
-                const card = document.createElement('div');
-                card.className = 'p-5 bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow hover:shadow-lg';
-                card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="text-xl font-bold text-gray-800">${assign.title}</h4>
-                            <p class="text-sm text-gray-500 mt-1">${course?.name} (${course?.code})</p>
-                            <p class="mt-3 text-gray-700">${assign.description}</p>
-                            ${statusHtml}
-                        </div>
-                        ${ !isStudent ?
-                        `<div class="flex gap-2 flex-shrink-0 ml-4">
-                             <button class="text-gray-600 hover:text-gray-800 transition-colors">แก้ไข</button>
-                             <button class="text-red-600 hover:text-red-800 transition-colors">ลบ</button>
-                         </div>` : ''
-                        }
-                    </div>
-                    ${assign.imageUrl ? `<img src="${assign.imageUrl}" alt="ตัวอย่าง" class="mt-4 rounded-lg max-w-sm mx-auto shadow-md">` : ''}
-                `;
-                list.appendChild(card);
-            });
-        }
-        
-        function renderMySubmissions() {
-            const tableBody = document.getElementById('my-submission-table-body');
-            tableBody.innerHTML = '';
-            const studentCourseIds = appState.studentCourses.map(c => c.id);
-            const assignments = liveDatabase.assignments.filter(a => studentCourseIds.includes(a.courseId));
-            
-            if (assignments.length === 0) {
-                 tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">ยังไม่มีการมอบหมายงาน</td></tr>';
-                 return;
-            }
-
-            assignments.forEach(assign => {
-                const course = liveDatabase.courses.find(c => c.id == assign.courseId);
-                const submission = liveDatabase.submissions.find(s => s.studentId == appState.currentUser.studentId && s.assignmentId == assign.id);
-                const status = submission ? submission.status : 'ค้างส่ง';
-                const score = submission ? (submission.score != null ? submission.score : '-') : '-';
-                const statusChip = status === 'ส่งแล้ว' 
-                    ? '<span class="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">ส่งแล้ว</span>' 
-                    : '<span class="px-3 py-1 text-sm font-medium text-red-800 bg-red-100 rounded-full">ค้างส่ง</span>';
-                
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50 transition-colors';
-                row.innerHTML = `
-                    <td class="py-3 px-4 border-b border-gray-200">${course?.name}</td>
-                    <td class="py-3 px-4 border-b border-gray-200">${assign.title}</td>
-                    <td class="py-3 px-4 border-b border-gray-200">${statusChip}</td>
-                    <td class="py-3 px-4 border-b border-gray-200">${score}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
-        
-        // This is a placeholder as drive integration is more complex
-         function renderLessons() {
-             const list = document.getElementById('lesson-list');
-             list.innerHTML = '';
-             const isStudent = appState.currentUser.role === 'student';
-             document.getElementById('add-lesson-btn').style.display = isStudent ? 'none' : 'block';
-             
-             let lessonsToShow = liveDatabase.lessons || [];
-
-             if (lessonsToShow.length === 0) {
-                list.innerHTML = `<p class="text-gray-500 text-center py-4">ไม่พบเนื้อหาบทเรียน</p>`;
-                return;
-             }
-
-             lessonsToShow.forEach(lesson => {
-                 const li = document.createElement('li');
-                 li.className = 'flex justify-between items-center p-4 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md hover:border-red-400 transition-shadow';
-                 li.innerHTML = `
-                    <span class="text-lg text-gray-800">${lesson.title}</span>
-                    <a href="${lesson.url}" target="_blank" class="px-4 py-2 text-sm text-white bg-green-600 rounded-md hover:bg-green-700 transition-transform transform hover:scale-105">เปิดดู</a>
-                 `;
-                 list.appendChild(li);
-             });
-        }
-        
-        // --- Modal & Form Submission Logic (Writes via Apps Script API) ---
-        
-        document.getElementById('student-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const originalId = document.getElementById('student-original-id').value;
-            const classId = document.getElementById('student-class-id').value;
-            const rowIndex = document.getElementById('student-row-index').value;
-            const newNumber = document.getElementById('student-number').value;
-            const newCode = document.getElementById('student-code').value;
-            const newName = document.getElementById('student-name').value;
-            
-            showLoader(true);
-            
-            const params = new URLSearchParams({
-                action: 'updateStudent',
-                classId,
-                rowIndex,
-                studentId: newCode, // send the new code
-                number: newNumber,
-                name: newName
-            });
-            
-            try {
-                const response = await fetch(`${WEB_APP_URL}?${params.toString()}`);
-                const result = await response.json();
-                if(result.status !== 'success') throw new Error(result.message);
-
-                // Update local liveDatabase to reflect changes immediately
-                const studentList = liveDatabase.students[classId];
-                const student = studentList.find(s => s.rowIndex == rowIndex);
-                if (student) {
-                    student.number = parseInt(newNumber);
-                    student.studentId = newCode;
-                    student.name = newName;
-                }
-                const user = liveDatabase.users.find(u => u.username === originalId);
-                if(user) {
-                   user.username = newCode;
-                   user.password = newCode;
-                   user.name = newName;
-                   user.studentId = newCode;
-                }
-                document.getElementById('student-modal').classList.remove('active');
-                renderStudents();
-            } catch(error) {
-                 console.error('Failed to update student:', error);
-                 alert('ไม่สามารถอัปเดตข้อมูลนักเรียนได้');
-            } finally {
-                showLoader(false);
-            }
-        });
-
-        document.getElementById('submission-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const studentId = document.getElementById('submission-student-id').value;
-            const assignmentId = document.getElementById('submission-assignment-id').value;
-            const status = document.getElementById('submission-status').value;
-            const score = document.getElementById('submission-score').value;
-
-            showLoader(true);
-            const params = new URLSearchParams({
-                action: 'updateSubmission',
-                studentId,
-                assignmentId,
-                status,
-                score
-            });
-
-            try {
-                const response = await fetch(`${WEB_APP_URL}?${params.toString()}`);
-                const result = await response.json();
-                if(result.status !== 'success') throw new Error(result.message);
-
-                // Update local data
-                let submission = liveDatabase.submissions.find(s => s.studentId == studentId && s.assignmentId == assignmentId);
-                if (submission) {
-                    submission.status = status;
-                    submission.score = score ? parseFloat(score) : null;
-                } else {
-                    // Add new submission to local data
-                    liveDatabase.submissions.push({ studentId, assignmentId, status, score: score ? parseFloat(score) : null, rowIndex: 'new'});
-                }
-                document.getElementById('submission-modal').classList.remove('active');
-                renderSubmissions(); 
-            } catch(error) {
-                 console.error('Failed to update submission:', error);
-                 alert('ไม่สามารถอัปเดตสถานะการส่งงานได้');
-            } finally {
-                showLoader(false);
-            }
-        });
-
-
-        // --- Helper, UI, and Unchanged Functions ---
-        function showLoader(show) {
-            loader.style.display = show ? 'flex' : 'none';
-        }
-        
-        function openStudentEditModal(e) {
-            const btn = e.currentTarget;
-            document.getElementById('student-original-id').value = btn.dataset.originalId;
-            document.getElementById('student-class-id').value = btn.dataset.classId;
-            document.getElementById('student-row-index').value = btn.dataset.rowIndex;
-            document.getElementById('student-number').value = btn.dataset.number;
-            document.getElementById('student-code').value = btn.dataset.code;
-            document.getElementById('student-name').value = btn.dataset.name;
-            document.getElementById('student-modal').classList.add('active');
-        }
-
-        function openSubmissionModal(e) {
-            const btn = e.currentTarget;
-            const studentId = btn.dataset.studentId;
-            const studentName = btn.dataset.studentName;
-            const assignmentId = btn.dataset.assignmentId;
-            const assignment = liveDatabase.assignments.find(a => a.id == assignmentId);
-            const submission = liveDatabase.submissions.find(s => s.studentId == studentId && s.assignmentId == assignmentId);
-
-            document.getElementById('submission-student-name').textContent = studentName;
-            document.getElementById('submission-assignment-title').textContent = assignment.title;
-            document.getElementById('submission-student-id').value = studentId;
-            document.getElementById('submission-assignment-id').value = assignmentId;
-            document.getElementById('submission-status').value = submission ? submission.status : 'ค้างส่ง';
-            document.getElementById('submission-score').value = submission ? (submission.score || '') : '';
-
-            document.getElementById('submission-modal').classList.add('active');
-        }
-
-        document.getElementById('cancel-student').addEventListener('click', () => document.getElementById('student-modal').classList.remove('active'));
-        document.getElementById('cancel-submission').addEventListener('click', () => document.getElementById('submission-modal').classList.remove('active'));
-
-
-        function setupMenus() {
-            const adminMenu = document.getElementById('admin-menu');
-            const studentMenu = document.getElementById('student-menu');
-            adminMenu.innerHTML = '';
-            studentMenu.innerHTML = '';
-            
-            const menuIcons = {
-                'dashboard-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>`,
-                'lessons-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m-9-5.747h18" /></svg>`,
-                'assignments-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>`,
-                'submissions-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`,
-                'students-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>`,
-                'profile-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`,
-                'teachers-view': `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197M15 21a6 6 0 006-6v-1a6 6 0 00-9-5.197" /></svg>`
-            }
-
-            if (appState.currentUser.role.includes('admin') || appState.currentUser.role === 'teacher') {
-                let menuHtml = `
-                    <a href="#" data-view="dashboard-view" data-title="ภาพรวม" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['dashboard-view']}ภาพรวม</a>
-                    <a href="#" data-view="lessons-view" data-title="เนื้อหาบทเรียน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['lessons-view']}เนื้อหาบทเรียน</a>
-                    <a href="#" data-view="assignments-view" data-title="ภาระงาน/ชิ้นงาน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['assignments-view']}ภาระงาน/ชิ้นงาน</a>
-                    <a href="#" data-view="submissions-view" data-title="เช็คการส่งงาน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['submissions-view']}เช็คการส่งงาน</a>
-                    <a href="#" data-view="students-view" data-title="จัดการนักเรียน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['students-view']}จัดการนักเรียน</a>
-                    <a href="#" data-view="profile-view" data-title="ข้อมูลส่วนตัวและรายวิชา" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['profile-view']}ข้อมูลส่วนตัว</a>
-                `;
-                 if (appState.currentUser.role === 'super-admin') {
-                     menuHtml += `<a href="#" data-view="teachers-view" data-title="จัดการครูผู้สอน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['teachers-view']}จัดการครูผู้สอน</a>`;
-                }
-                adminMenu.innerHTML = menuHtml;
-                studentMenu.classList.add('hidden');
-                adminMenu.classList.remove('hidden');
-
-            } else { // Student
-                studentMenu.innerHTML = `
-                    <a href="#" data-view="lessons-view" data-title="เนื้อหาบทเรียน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['lessons-view']}เนื้อหาบทเรียน</a>
-                    <a href="#" data-view="assignments-view" data-title="ภาระงาน/ชิ้นงาน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['assignments-view']}ภาระงาน/ชิ้นงาน</a>
-                    <a href="#" data-view="my-submissions-view" data-title="สถานะการส่งงาน" class="nav-link flex items-center px-6 py-4 text-gray-300 hover:bg-red-700 hover:text-white transition-colors duration-200">${menuIcons['submissions-view']}สถานะการส่งงาน</a>
-                `;
-                adminMenu.classList.add('hidden');
-                studentMenu.classList.remove('hidden');
-            }
-             document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    e.currentTarget.classList.add('active');
-                    navigateTo(e.currentTarget.dataset.view, e.currentTarget.dataset.title);
-                     if (window.innerWidth < 1024) {
-                        sidebar.classList.add('-translate-x-full');
-                    }
-                });
-            });
-        }
-        
-        function navigateTo(viewId, title) {
-            allViews.forEach(view => view.classList.add('hidden'));
-            const targetView = document.getElementById(viewId);
-            if (targetView) {
-                targetView.classList.remove('hidden');
-                pageTitle.textContent = title;
-                appState.currentView = viewId;
-                
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                const activeLink = document.querySelector(`.nav-link[data-view="${viewId}"]`);
-                if(activeLink) activeLink.classList.add('active');
-
-                const renderMap = {
-                    'dashboard-view': renderDashboard,
-                    'lessons-view': renderLessons,
-                    'assignments-view': renderAssignments,
-                    'submissions-view': renderSubmissions,
-                    'students-view': renderStudents,
-                    // 'teachers-view': renderTeachers,
-                    // 'profile-view': renderProfile,
-                    'my-submissions-view': renderMySubmissions,
-                };
-                if(renderMap[viewId]) renderMap[viewId]();
-            }
-        }
-
-        sidebar.classList.add('-translate-x-full', 'lg:translate-x-0');
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-        });
-
+    // --- Event Listeners ---
+    loginBtn.addEventListener('click', handleLogin);
+    passwordInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') handleLogin() });
+    logoutBtn.addEventListener('click', handleLogout);
+    window.addEventListener('hashchange', () => navigateTo(window.location.hash));
+    
+    mobileMenuButton.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
     });
-    </script>
+
+    // Start the application
+    main();
+});
+</script>
 </body>
 </html>
 
