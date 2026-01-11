@@ -634,7 +634,93 @@
         function setScoreMode(m) { scoreMode=m; document.querySelectorAll('.btn-score').forEach(b=>b.classList.remove('score-btn-active')); if(m!='manual') event.target.classList.add('score-btn-active'); document.getElementById('scan-score-input').focus(); }
         function checkSmartSchedule() { /* Logic */ }
         function updateInboxBadge() { const c = dataState.submissions.filter(s=>!dataState.scores.some(x=>x.taskId==s.taskId && x.studentId==s.studentId)).length; const b=document.getElementById('badge-homework'); if(c){b.classList.remove('hidden');b.textContent=c;}else b.classList.add('hidden'); }
+// ==========================================
+        // 🛠️ ส่วนฟังก์ชันที่ขาดหายไป (วางส่วนนี้เพิ่ม)
+        // ==========================================
 
+        function renderAttRoster() {
+            const cid = document.getElementById('att-class-select')?.value;
+            const div = document.getElementById('att-roster-grid');
+            if (!div) return;
+            div.innerHTML = '';
+            if (!cid) return;
+            
+            const date = document.getElementById('att-date-input').value || getThaiDateISO();
+            const students = dataState.students.filter(s => s.classId == cid).sort((a, b) => Number(a.no || 0) - Number(b.no || 0));
+            
+            let p=0, l=0, a=0, act=0;
+
+            students.forEach(s => { 
+                const log = dataState.attendance.find(x => x.studentId == s.id && x.date == date);
+                const st = log ? log.status : 'none';
+                
+                if(st=='มา') p++; else if(st=='ลา') l++; else if(st=='ขาด') a++; else if(st=='กิจกรรม') act++;
+
+                let cardClass = "bg-white border-slate-200 opacity-60";
+                let textClass = "text-slate-400";
+                let icon = "";
+
+                if (st == 'มา') { cardClass = "bg-green-50 border-green-200 opacity-100 ring-1 ring-green-200"; textClass = "text-green-600 font-bold"; icon = "<i class='fa-solid fa-check-circle'></i>"; }
+                else if (st == 'ลา') { cardClass = "bg-yellow-50 border-yellow-200 opacity-100 ring-1 ring-yellow-200"; textClass = "text-yellow-600 font-bold"; icon = "<i class='fa-solid fa-envelope-open-text'></i>"; }
+                else if (st == 'ขาด') { cardClass = "bg-red-50 border-red-200 opacity-100 ring-1 ring-red-200"; textClass = "text-red-600 font-bold"; icon = "<i class='fa-solid fa-xmark'></i>"; }
+                else if (st == 'กิจกรรม') { cardClass = "bg-orange-50 border-orange-200 opacity-100 ring-1 ring-orange-200"; textClass = "text-orange-600 font-bold"; icon = "<i class='fa-solid fa-person-running'></i>"; }
+
+                const el = document.createElement('div');
+                el.className = `status-box ${cardClass} p-3 rounded-2xl border flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-md relative group aspect-[4/3]`;
+                el.onclick = () => { if(attMode) saveAtt(s.id, cid, date, attMode); };
+                
+                el.innerHTML = `
+                    <div class="absolute top-2 right-3 text-[10px] text-slate-400 font-bold">#${s.no}</div>
+                    <div class="font-bold text-sm truncate w-full text-center mb-1 text-slate-700">${s.name}</div>
+                    <div class="text-xs ${textClass} flex items-center gap-1">${icon} ${st=='none' ? '-' : st}</div>
+                `;
+                div.appendChild(el);
+            });
+
+            // อัปเดตตัวเลขสรุป
+            document.getElementById('stat-present').textContent = p;
+            document.getElementById('stat-leave').textContent = l;
+            document.getElementById('stat-absent').textContent = a;
+            document.getElementById('stat-activity').textContent = act;
+        }
+
+        function setAttMode(m) {
+            attMode = m;
+            document.getElementById('btn-att-present').classList.remove('att-active-present');
+            document.getElementById('btn-att-leave').classList.remove('att-active-leave');
+            document.getElementById('btn-att-absent').classList.remove('att-active-absent');
+            document.getElementById('btn-att-activity').classList.remove('att-active-activity');
+
+            if(m=='มา') document.getElementById('btn-att-present').classList.add('att-active-present');
+            if(m=='ลา') document.getElementById('btn-att-leave').classList.add('att-active-leave');
+            if(m=='ขาด') document.getElementById('btn-att-absent').classList.add('att-active-absent');
+            if(m=='กิจกรรม') document.getElementById('btn-att-activity').classList.add('att-active-activity');
+            
+            document.getElementById('att-scan-input').focus();
+        }
+
+        function renderAdminMaterials() {
+            const div = document.getElementById('admin-mat-list');
+            if (!div) return;
+            div.innerHTML = '';
+            
+            dataState.materials.forEach(m => {
+                const sub = dataState.subjects.find(s => s.id == m.subjectId)?.name || 'ทั่วไป';
+                const el = document.createElement('div');
+                el.className = "bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all group";
+                el.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"><i class="fa-solid fa-book-open"></i></div>
+                        <div class="overflow-hidden">
+                            <div class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full w-fit mb-1 font-bold">${sub}</div>
+                            <div class="font-bold text-sm text-slate-700 truncate">${m.title}</div>
+                            <a href="${m.link}" target="_blank" class="text-xs text-blue-500 hover:underline truncate block mt-1"><i class="fa-solid fa-link mr-1"></i>${m.link}</a>
+                        </div>
+                    </div>
+                `;
+                div.appendChild(el);
+            });
+        }
         // Init Listeners
         function initEventListeners() {
             document.getElementById('admin-login-form').onsubmit = async(e) => { e.preventDefault(); const r = await saveAndRefresh({action:'login', username:document.getElementById('admin-username').value, password:document.getElementById('admin-password').value}); if(r && r.status=='success') { localStorage.setItem('wany_admin_session', r.token); showAdminPanel(); } };
