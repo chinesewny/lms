@@ -17,7 +17,7 @@
                 radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, hsla(225,39%,30%,0) 50%), 
                 radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, hsla(339,49%,30%,0) 50%);
             background-color: #eef2f6;
-            color: #334155; /* Slate-700 for text */
+            color: #334155;
         }
         
         /* Minimal White Glassmorphism */
@@ -55,7 +55,7 @@
         .btn-activity { background: #f97316; color: white; transition: 0.2s; } /* Orange */
         .btn-activity:hover { background: #ea580c; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
 
-        /* Attendance Active States (Hold Button) */
+        /* Attendance Active States */
         .att-active-present { background: #059669 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #059669; transform: scale(1.05); }
         .att-active-leave { background: #d97706 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #d97706; transform: scale(1.05); }
         .att-active-absent { background: #dc2626 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #dc2626; transform: scale(1.05); }
@@ -113,7 +113,7 @@
                 <div class="flex items-center gap-4">
                     <img src="https://img2.pic.in.th/pic/Logoc404dc85753b800c.png" alt="Logo" class="h-14 w-14 object-contain bg-white rounded-full p-1 shadow-md">
                     <div>
-                        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Chinese<span class="text-blue-600">Class</span></h1>
+                        <h1 class="text-2xl font-bold text-white tracking-wide drop-shadow-md">Chinese<span class="text-blue-600">Class</span> By Krukong</h1>
                         <p class="text-slate-500 text-xs">ครูกีรติ ประสพพรรังสี | โรงเรียนวังน้ำเย็นวิทยาคม</p>
                     </div>
                 </div>
@@ -516,8 +516,10 @@
     </div>
 
     <script>
-        // ⚠️ URL Script (เปลี่ยนเป็นของคุณ)
+        // ***********************************************
+        // ⚠️ เปลี่ยน URL ด้านล่างให้เป็น URL ของ Google Apps Script ที่ Deploy ใหม่ของคุณ
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQNjMSE06u5xO4dtyipa5P-YzoaicppubdwlUgMpaX4L4TUjk3-xY2PRnzhS42AxZe/exec"; 
+        // ***********************************************
 
         let dataState = { subjects: [], classes: [], students: [], tasks: [], scores: [], attendance: [], materials: [], submissions: [], returns: [], schedules: [] };
         let scoreMode = 'manual'; 
@@ -544,7 +546,6 @@
             } catch (error) { console.error(error); showToast("Init Error", "bg-red-600"); }
         }
 
-        // ... (Basic Helpers unchanged: cleanup, timer, syncData, localStorage) ...
         function cleanup() { if (inactivityTimer) clearTimeout(inactivityTimer); if (scheduleInterval) clearInterval(scheduleInterval); if (syncInterval) clearInterval(syncInterval); }
         function setupInactivityTimer() { const logout = () => { showToast("หมดเวลาการใช้งาน", "bg-yellow-600"); handleLogout(true); }; const reset = () => { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(logout, 30 * 60 * 1000); }; window.addEventListener('click', reset); window.addEventListener('keypress', reset); reset(); }
         async function syncData() {
@@ -576,7 +577,29 @@
             }
         }
 
-        // Updated Material Renderer (Beautiful Cards + Edit)
+        // --- RENDER FUNCTIONS ---
+        function renderScoreRoster() {
+            const cid = document.getElementById('scan-class-select')?.value;
+            const tid = document.getElementById('scan-task-select')?.value;
+            const div = document.getElementById('score-roster-grid');
+            if (!div) return; div.innerHTML = '';
+            if (!cid || !tid) return;
+            const students = dataState.students.filter(s => s.classId == cid).sort((a, b) => Number(a.no || 0) - Number(b.no || 0));
+            students.forEach(s => { 
+                const sc = dataState.scores.find(x => x.studentId == s.id && x.taskId == tid);
+                const hasScore = sc !== undefined;
+                const val = hasScore ? sc.score : '-';
+                let boxClass = "bg-white border-slate-200 text-slate-400";
+                let textClass = "text-slate-300";
+                if (hasScore) { boxClass = "bg-green-50 border-green-200 text-green-600 shadow-sm ring-1 ring-green-100"; textClass = "text-green-600 font-bold"; }
+                const el = document.createElement('div');
+                el.className = `status-box ${boxClass} p-3 flex flex-col items-center justify-center cursor-pointer border rounded-2xl hover:shadow-md transition-all relative aspect-square group`;
+                el.onclick = () => openManualScore(s.id, tid);
+                el.innerHTML = `<div class="text-[10px] absolute top-2 right-3 opacity-50 font-bold group-hover:opacity-100 transition-opacity">#${s.no || '?'}</div><div class="font-bold text-xs truncate w-full text-center mt-auto text-slate-700">${s.name || 'ไม่มีชื่อ'}</div><div class="text-3xl mb-auto mt-1 ${textClass}">${val}</div>`;
+                div.appendChild(el);
+            });
+        }
+
         function renderAdminMaterials() {
             const div = document.getElementById('admin-mat-list'); if(!div) return; div.innerHTML='';
             dataState.materials.forEach(m => {
@@ -610,7 +633,6 @@
             }
         };
 
-        // Updated Attendance Renderer (Activity Button + Hold State)
         function renderAttRoster() {
             const cid = document.getElementById('att-class-select')?.value; const div = document.getElementById('att-roster-grid');
             if(!div || !cid) return; div.innerHTML='';
@@ -648,7 +670,6 @@
             document.getElementById('att-scan-input').focus();
         }
 
-        // Updated Student Dashboard (Red Card for Pending)
         function renderStudentDashboard(s) {
             document.getElementById('std-dash-name').textContent = s.name;
             document.getElementById('std-dash-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name;
@@ -688,8 +709,7 @@
                         statusTxt = "รอตรวจ";
                         btnClass = "bg-blue-100 text-blue-600 hover:bg-blue-200";
                     } else {
-                        // Pending Work (RED)
-                        cardClass = "card-pending shadow-sm"; // Custom class defined in CSS
+                        cardClass = "card-pending shadow-sm";
                         icon = '<i class="fa-solid fa-circle-exclamation text-red-500"></i>';
                         statusTxt = "ยังไม่ส่ง";
                         btnClass = "bg-red-500 text-white hover:bg-red-600 shadow-md";
@@ -709,7 +729,6 @@
                 html += `</div></div>`;
                 container.innerHTML += html;
             });
-            // Attendance History
             const attBody = document.getElementById('std-att-body'); attBody.innerHTML='';
             const atts = dataState.attendance.filter(a=>a.studentId==s.id).sort((a,b)=>b.date.localeCompare(a.date));
             if(!atts.length) attBody.innerHTML='<tr><td colspan="2" class="px-4 py-3 text-center text-slate-400">ไม่มีข้อมูล</td></tr>';
@@ -770,7 +789,7 @@
             });
         }
         
-        // --- Standard Helpers (Date, Grade, Toast, Print) ---
+        // --- Standard Helpers ---
         function getThaiDateISO(){ const d=new Date(); return new Date(d.getTime()+(7*60*60000)).toISOString().split('T')[0]; }
         function formatThaiDate(d){ if(!d)return'-'; try{ return new Date(d).toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'}); }catch{return d;} }
         function calGrade(s){ s=Number(s)||0; if(s>=80)return 4; if(s>=75)return 3.5; if(s>=70)return 3; if(s>=65)return 2.5; if(s>=60)return 2; if(s>=55)return 1.5; if(s>=50)return 1; return 0; }
