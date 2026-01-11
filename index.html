@@ -11,373 +11,419 @@
     <style>
         body { 
             font-family: 'Sarabun', sans-serif; 
-            background: radial-gradient(circle at top left, #1e3a8a, #0f172a, #000000); 
-            background-attachment: fixed;
-            color: #e2e8f0;
+            background: #f0f2f5;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, hsla(253,16%,7%,0) 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, hsla(225,39%,30%,0) 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, hsla(339,49%,30%,0) 50%);
+            background-color: #eef2f6;
+            color: #334155; /* Slate-700 for text */
         }
+        
+        /* Minimal White Glassmorphism */
         .glass-ios {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
+        
         .glass-input {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
             transition: all 0.3s;
         }
         .glass-input:focus {
-            background: rgba(0, 0, 0, 0.5);
-            border-color: rgba(255, 255, 255, 0.3);
-            outline: none;
+            background: #ffffff;
+            border-color: #3b82f6;
+            outline: 2px solid rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
-        .btn-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-blue:hover:not(:disabled) { box-shadow: 0 0 15px rgba(37, 99, 235, 0.5); transform: translateY(-1px); }
-        .btn-red { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-yellow { background: linear-gradient(135deg, #d97706, #b45309); color: white; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-score-active { background: #eab308 !important; color: black !important; border: 2px solid #fff !important; font-weight: bold; transform: scale(1.1); box-shadow: 0 0 15px rgba(234, 179, 8, 0.6); }
-        .btn-att-active-present { background: #059669 !important; color: white !important; border-color: white !important; }
-        .btn-att-active-leave { background: #d97706 !important; color: white !important; border-color: white !important; }
-        .btn-att-active-absent { background: #dc2626 !important; color: white !important; border-color: white !important; }
-        .status-box { transition: all 0.2s; border-radius: 12px; }
-        .status-none { background: rgba(255, 255, 255, 0.05); border: 1px dashed rgba(255, 255, 255, 0.2); color: #94a3b8; }
-        .status-done { background: rgba(5, 150, 105, 0.2); border: 1px solid #059669; color: #34d399; box-shadow: 0 0 10px rgba(5, 150, 105, 0.2); }
-        .chapter-checkbox:checked + div { background: linear-gradient(135deg, #d97706, #b45309); color: white; border-color: white; }
+
+        /* Buttons */
+        .btn-primary { background: #2563eb; color: white; transition: 0.2s; }
+        .btn-primary:hover { background: #1d4ed8; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        
+        .btn-danger { background: #ef4444; color: white; transition: 0.2s; }
+        .btn-danger:hover { background: #dc2626; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        
+        .btn-warning { background: #f59e0b; color: white; transition: 0.2s; }
+        .btn-warning:hover { background: #d97706; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
+
+        .btn-activity { background: #f97316; color: white; transition: 0.2s; } /* Orange */
+        .btn-activity:hover { background: #ea580c; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); }
+
+        /* Attendance Active States (Hold Button) */
+        .att-active-present { background: #059669 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #059669; transform: scale(1.05); }
+        .att-active-leave { background: #d97706 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #d97706; transform: scale(1.05); }
+        .att-active-absent { background: #dc2626 !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #dc2626; transform: scale(1.05); }
+        .att-active-activity { background: #ea580c !important; color: white !important; ring: 2px solid #fff; box-shadow: 0 0 0 3px #ea580c; transform: scale(1.05); }
+
+        /* Score Button Active */
+        .score-btn-active { background: #f59e0b !important; color: white !important; transform: scale(1.1); font-weight: bold; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+
+        /* Status Cards */
+        .status-box { transition: all 0.2s; border-radius: 12px; background: white; border: 1px solid #f1f5f9; }
+        .status-box:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .status-present { border-left: 4px solid #10b981; }
+        .status-leave { border-left: 4px solid #f59e0b; }
+        .status-absent { border-left: 4px solid #ef4444; }
+        .status-activity { border-left: 4px solid #f97316; }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Toast */
         #toast-notification { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; }
         .toast-show { transform: translate(-50%, 0) !important; opacity: 1 !important; }
-        .loading-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+
+        /* Loader */
+        .loading-spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid rgba(0,0,0,.1); border-radius: 50%; border-top-color: #3b82f6; animation: spin 1s ease-in-out infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        @media print {
-            @page { size: A4 portrait; margin: 1cm; }
-            body { background: white !important; color: black !important; -webkit-print-color-adjust: exact; }
-            #app-root, #toast-notification, .no-print { display: none !important; }
-            #print-area { display: block !important; position: relative !important; width: 100% !important; background: white !important; color: black !important; }
-            table { width: 100%; border-collapse: collapse; font-size: 12px; }
-            thead { display: table-header-group; } 
-            tr { page-break-inside: avoid; page-break-after: auto; }
-            th, td { border: 1px solid #000; padding: 6px; text-align: center; color: black; }
+
+        /* Pending Work Card (Red) */
+        .card-pending {
+            background: linear-gradient(to bottom right, #fef2f2, #fff1f2);
+            border: 1px solid #fecaca;
+            color: #991b1b;
         }
-        .error-input { border-color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; }
+        .card-pending .icon-box { background: #fee2e2; color: #ef4444; }
+        .card-pending button { background: #ef4444; color: white; }
+        .card-pending button:hover { background: #dc2626; }
+
+        @media print {
+            body { background: white !important; color: black !important; }
+            #app-root, .no-print { display: none !important; }
+            #print-area { display: block !important; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+        }
     </style>
 </head>
-<body class="w-full h-full min-h-screen">
-    <div id="app-root" class="w-full h-full min-h-screen flex items-stretch justify-center p-2 md:p-4">
-        <div class="w-full max-w-7xl rounded-3xl glass-ios flex flex-col relative overflow-hidden shadow-2xl">
+<body class="w-full h-full min-h-screen text-slate-800">
+    <div id="app-root" class="w-full h-full min-h-screen flex items-stretch justify-center p-2 md:p-6">
+        <div class="w-full max-w-7xl rounded-[2rem] glass-ios flex flex-col relative overflow-hidden shadow-2xl">
             
-            <header class="w-full px-6 py-4 border-b border-white/10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 z-10 no-print">
+            <header class="w-full px-8 py-5 border-b border-gray-200/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4 z-10 no-print bg-white/40">
                 <div class="flex items-center gap-4">
-                    <img src="https://img2.pic.in.th/pic/Logoc404dc85753b800c.png" alt="Logo" class="h-16 w-16 object-contain bg-black/20 rounded-full p-1 border border-white/10">
+                    <img src="https://img2.pic.in.th/pic/Logoc404dc85753b800c.png" alt="Logo" class="h-14 w-14 object-contain bg-white rounded-full p-1 shadow-md">
                     <div>
-                        <h1 class="text-2xl font-bold text-white tracking-wide">Chinese<span class="text-yellow-400">Class</span> By Krukong</h1>
-                        <p class="text-blue-200 text-xs">ครูกีรติ ประสพพรรังสี - โรงเรียนวังน้ำเย็นวิทยาคม</p>
+                        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Chinese<span class="text-blue-600">Class</span></h1>
+                        <p class="text-slate-500 text-xs">ครูกีรติ ประสพพรรังสี | โรงเรียนวังน้ำเย็นวิทยาคม</p>
                     </div>
                 </div>
-                <nav class="inline-flex rounded-full bg-black/20 p-1 border border-white/5">
-                    <button id="tab-btn-admin" onclick="switchMainTab('admin')" class="px-6 py-2 rounded-full text-sm font-bold text-white/50 hover:text-white transition-all"><i class="fa-solid fa-chalkboard-user mr-2"></i>คุณครู</button> 
-                    <button id="tab-btn-student" onclick="switchMainTab('student')" class="px-6 py-2 rounded-full text-sm font-bold text-white/50 hover:text-white transition-all"><i class="fa-solid fa-user-graduate mr-2"></i>นักเรียน</button>
+                <nav class="inline-flex rounded-full bg-slate-100 p-1.5 shadow-inner">
+                    <button id="tab-btn-admin" onclick="switchMainTab('admin')" class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all"><i class="fa-solid fa-chalkboard-user mr-2"></i>คุณครู</button> 
+                    <button id="tab-btn-student" onclick="switchMainTab('student')" class="px-6 py-2 rounded-full text-sm font-bold text-slate-500 hover:text-slate-800 transition-all"><i class="fa-solid fa-user-graduate mr-2"></i>นักเรียน</button>
                 </nav>
             </header>
 
-            <main class="flex-1 w-full px-4 md:px-6 pb-6 overflow-y-auto no-print scroll-smooth">
+            <main class="flex-1 w-full px-4 md:px-8 pb-8 overflow-y-auto no-print scroll-smooth">
                 <div class="w-full max-w-7xl mx-auto mt-6 flex flex-col gap-6">
                     
-                    <div id="section-admin" class="flex flex-col gap-5 hidden">
+                    <div id="section-admin" class="flex flex-col gap-6 hidden">
                         <div id="admin-login-wrapper" class="flex flex-col items-center justify-center py-20 gap-8">
-                            <div class="glass-ios p-10 rounded-3xl w-full max-w-sm flex flex-col items-center relative overflow-hidden">
-                                <h2 class="text-2xl font-bold text-white mb-6">เข้าสู่ระบบคุณครู</h2>
+                            <div class="glass-ios p-10 rounded-3xl w-full max-w-sm flex flex-col items-center relative shadow-xl bg-white/80">
+                                <h2 class="text-2xl font-bold text-slate-800 mb-2">เข้าสู่ระบบ</h2>
+                                <p class="text-slate-400 text-sm mb-6">สำหรับคุณครูผู้สอน</p>
                                 <form id="admin-login-form" class="space-y-4 w-full">
-                                    <input id="admin-username" type="text" placeholder="Username" class="w-full rounded-xl glass-input px-4 py-3 text-white text-center" required>
-                                    <input id="admin-password" type="password" placeholder="Password" class="w-full rounded-xl glass-input px-4 py-3 text-white text-center" required>
-                                    <button type="submit" class="w-full py-3 rounded-xl btn-yellow font-bold shadow-lg text-lg mt-2 flex items-center justify-center gap-2">
-                                        <span id="login-spinner" class="hidden loading-spinner"></span> Login
+                                    <input id="admin-username" type="text" placeholder="Username" class="w-full rounded-xl glass-input px-4 py-3 text-center" required>
+                                    <input id="admin-password" type="password" placeholder="Password" class="w-full rounded-xl glass-input px-4 py-3 text-center" required>
+                                    <button type="submit" class="w-full py-3 rounded-xl btn-primary font-bold shadow-lg text-lg mt-2 flex items-center justify-center gap-2">
+                                        <span id="login-spinner" class="hidden loading-spinner border-t-white"></span> Login
                                     </button>
                                 </form>
                             </div>
                         </div>
 
                         <div id="admin-content-wrapper" class="hidden flex flex-col gap-6">
-                            <div class="flex justify-between items-center glass-ios px-4 py-3 rounded-2xl">
+                            <div class="flex justify-between items-center glass-ios px-6 py-4 rounded-2xl bg-white/60">
                                 <div class="flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white"><i class="fa-solid fa-user-tie"></i></div>
-                                    <h3 class="text-sm font-bold text-white">ผู้ดูแลระบบ <span class="text-green-400 text-xs ml-2">● Online</span></h3>
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shadow-sm"><i class="fa-solid fa-user-tie"></i></div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-700">ผู้ดูแลระบบ</h3>
+                                        <p class="text-xs text-green-500 font-bold">● Online</p>
+                                    </div>
                                 </div>
-                                <button onclick="handleLogout(true)" class="bg-red-500/20 hover:bg-red-500 text-white px-4 py-2 rounded-xl text-xs font-bold border border-red-500/30"><i class="fa-solid fa-power-off mr-2"></i>ออก</button>
+                                <button onclick="handleLogout(true)" class="bg-red-50 text-red-500 hover:bg-red-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors"><i class="fa-solid fa-power-off mr-2"></i>Logout</button>
                             </div>
 
                             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                                <button onclick="switchAdminSubTab('basic')" id="menu-basic" class="menu-btn btn-blue rounded-2xl py-3 font-bold shadow-lg"><i class="fa-solid fa-folder-open block text-xl mb-1"></i> ข้อมูล</button> 
-                                <button onclick="switchAdminSubTab('scan')" id="menu-scan" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"><i class="fa-solid fa-qrcode block text-xl mb-1"></i> ให้คะแนน</button>
-                                <button onclick="switchAdminSubTab('individual')" id="menu-individual" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"><i class="fa-solid fa-id-card block text-xl mb-1"></i> รายบุคคล</button>
-                                <button onclick="switchAdminSubTab('report')" id="menu-report" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"><i class="fa-solid fa-print block text-xl mb-1"></i> พิมพ์/CSV</button>
-                                <button onclick="switchAdminSubTab('homework')" id="menu-homework" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold relative"><i class="fa-solid fa-list-check block text-xl mb-1"></i> ตรวจงาน<span id="badge-homework" class="absolute top-2 right-2 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden">0</span></button>
-                                <button onclick="switchAdminSubTab('attendance')" id="menu-attendance" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"><i class="fa-solid fa-user-check block text-xl mb-1"></i> เช็คชื่อ</button>
-                                <button onclick="switchAdminSubTab('material')" id="menu-material" class="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"><i class="fa-solid fa-book-open block text-xl mb-1"></i> เนื้อหา</button>
+                                <button onclick="switchAdminSubTab('basic')" id="menu-basic" class="menu-btn btn-primary rounded-2xl py-3 font-bold shadow-lg text-white"><i class="fa-solid fa-folder-open block text-xl mb-1"></i> ข้อมูล</button> 
+                                <button onclick="switchAdminSubTab('scan')" id="menu-scan" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold"><i class="fa-solid fa-qrcode block text-xl mb-1 text-blue-500"></i> ให้คะแนน</button>
+                                <button onclick="switchAdminSubTab('individual')" id="menu-individual" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold"><i class="fa-solid fa-id-card block text-xl mb-1 text-purple-500"></i> รายบุคคล</button>
+                                <button onclick="switchAdminSubTab('report')" id="menu-report" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold"><i class="fa-solid fa-print block text-xl mb-1 text-slate-500"></i> รายงาน</button>
+                                <button onclick="switchAdminSubTab('homework')" id="menu-homework" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold relative"><i class="fa-solid fa-list-check block text-xl mb-1 text-orange-500"></i> ตรวจงาน<span id="badge-homework" class="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full hidden shadow-sm">0</span></button>
+                                <button onclick="switchAdminSubTab('attendance')" id="menu-attendance" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold"><i class="fa-solid fa-user-check block text-xl mb-1 text-green-500"></i> เช็คชื่อ</button>
+                                <button onclick="switchAdminSubTab('material')" id="menu-material" class="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold"><i class="fa-solid fa-book-open block text-xl mb-1 text-pink-500"></i> เนื้อหา</button>
                             </div>
 
-                            <section id="admin-panel-basic" class="admin-panel hidden glass-ios rounded-3xl p-6">
-                                <h3 class="text-xl font-bold text-white mb-4 border-b border-white/10 pb-2">จัดการข้อมูลพื้นฐาน</h3>
+                            <section id="admin-panel-basic" class="admin-panel hidden glass-ios rounded-3xl p-6 bg-white/60">
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 pb-2 border-b border-gray-200">จัดการข้อมูลพื้นฐาน</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <h4 class="font-bold text-yellow-400 mb-2">1. เพิ่มวิชา</h4>
+                                    <div class="bg-white/50 p-5 rounded-2xl border border-white shadow-sm">
+                                        <h4 class="font-bold text-blue-600 mb-3"><i class="fa-solid fa-book mr-2"></i>1. เพิ่มวิชา</h4>
                                         <form id="form-subject" class="flex gap-2">
-                                            <input id="subject-name" type="text" placeholder="ชื่อวิชา (เช่น จีน ม.1)" class="glass-input rounded-lg px-3 py-2 w-full text-sm">
-                                            <button type="submit" class="btn-blue px-4 py-2 rounded-lg text-sm font-bold"><i class="fa-solid fa-plus"></i></button>
+                                            <input id="subject-name" type="text" placeholder="ชื่อวิชา (เช่น จีน ม.1)" class="glass-input rounded-xl px-3 py-2 w-full text-sm">
+                                            <button type="submit" class="btn-primary px-4 py-2 rounded-xl text-sm font-bold shadow-md"><i class="fa-solid fa-plus"></i></button>
                                         </form>
-                                        <div id="subject-list-container" class="mt-3 max-h-40 overflow-y-auto space-y-2"></div>
+                                        <div id="subject-list-container" class="mt-3 max-h-32 overflow-y-auto space-y-2 pr-1"></div>
                                     </div>
                                     
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <h4 class="font-bold text-yellow-400 mb-2">2. เพิ่มห้องเรียน</h4>
+                                    <div class="bg-white/50 p-5 rounded-2xl border border-white shadow-sm">
+                                        <h4 class="font-bold text-blue-600 mb-3"><i class="fa-solid fa-layer-group mr-2"></i>2. เพิ่มห้องเรียน</h4>
                                         <form id="form-class" class="flex flex-col gap-2">
-                                            <select id="class-subject-ref" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50"></select>
+                                            <select id="class-subject-ref" class="glass-input rounded-xl px-3 py-2 text-sm"></select>
                                             <div class="flex gap-2">
-                                                <input id="class-name" type="text" placeholder="ชื่อห้อง (เช่น 1/1)" class="glass-input rounded-lg px-3 py-2 w-full text-sm">
-                                                <button type="submit" class="btn-blue px-4 py-2 rounded-lg text-sm font-bold"><i class="fa-solid fa-plus"></i></button>
+                                                <input id="class-name" type="text" placeholder="ชื่อห้อง (เช่น 1/1)" class="glass-input rounded-xl px-3 py-2 w-full text-sm">
+                                                <button type="submit" class="btn-primary px-4 py-2 rounded-xl text-sm font-bold shadow-md"><i class="fa-solid fa-plus"></i></button>
                                             </div>
                                         </form>
                                     </div>
 
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <h4 class="font-bold text-yellow-400 mb-2">3. เพิ่มนักเรียน</h4>
+                                    <div class="bg-white/50 p-5 rounded-2xl border border-white shadow-sm">
+                                        <h4 class="font-bold text-blue-600 mb-3"><i class="fa-solid fa-user-plus mr-2"></i>3. เพิ่มนักเรียน</h4>
                                         <form id="form-student" class="flex flex-col gap-2">
-                                            <select id="student-class" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50"></select>
+                                            <select id="student-class" class="glass-input rounded-xl px-3 py-2 text-sm"></select>
                                             <div class="grid grid-cols-3 gap-2">
-                                                <input id="student-no" type="number" placeholder="เลขที่" class="glass-input rounded-lg px-3 py-2 text-sm">
-                                                <input id="student-id" type="text" placeholder="รหัส" class="glass-input rounded-lg px-3 py-2 text-sm col-span-2">
+                                                <input id="student-no" type="number" placeholder="เลขที่" class="glass-input rounded-xl px-3 py-2 text-sm">
+                                                <input id="student-id" type="text" placeholder="รหัส" class="glass-input rounded-xl px-3 py-2 text-sm col-span-2">
                                             </div>
-                                            <input id="student-name" type="text" placeholder="ชื่อ-นามสกุล" class="glass-input rounded-lg px-3 py-2 text-sm">
-                                            <button type="submit" class="btn-blue w-full py-2 rounded-lg text-sm font-bold">บันทึก</button>
+                                            <input id="student-name" type="text" placeholder="ชื่อ-นามสกุล" class="glass-input rounded-xl px-3 py-2 text-sm">
+                                            <button type="submit" class="btn-primary w-full py-2 rounded-xl text-sm font-bold shadow-md">บันทึก</button>
                                         </form>
                                     </div>
 
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-                                        <h4 class="font-bold text-yellow-400 mb-2">4. สั่งงาน/สอบ</h4>
+                                    <div class="bg-white/50 p-5 rounded-2xl border border-white shadow-sm">
+                                        <h4 class="font-bold text-blue-600 mb-3"><i class="fa-solid fa-clipboard-check mr-2"></i>4. สั่งงาน/สอบ</h4>
                                         <form id="form-task" class="flex flex-col gap-2">
-                                            <select id="task-subject-filter" onchange="renderTaskClassCheckboxes()" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50"></select>
-                                            <div id="task-class-checkboxes" class="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto bg-black/20 p-2 rounded-lg"></div>
-                                            <input id="task-name" type="text" placeholder="ชื่องาน" class="glass-input rounded-lg px-3 py-2 text-sm">
+                                            <select id="task-subject-filter" onchange="renderTaskClassCheckboxes()" class="glass-input rounded-xl px-3 py-2 text-sm"></select>
+                                            <div id="task-class-checkboxes" class="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto bg-slate-50 p-2 rounded-xl border border-slate-200"></div>
+                                            <input id="task-name" type="text" placeholder="ชื่องาน" class="glass-input rounded-xl px-3 py-2 text-sm">
                                             <div class="flex gap-2">
-                                                <input id="task-max" type="number" placeholder="คะแนนเต็ม" value="10" class="glass-input rounded-lg px-3 py-2 w-1/2 text-sm text-center">
-                                                <select id="task-category" class="glass-input rounded-lg px-3 py-2 w-1/2 text-sm bg-black/50">
+                                                <input id="task-max" type="number" placeholder="คะแนน" value="10" class="glass-input rounded-xl px-3 py-2 w-1/2 text-sm text-center">
+                                                <select id="task-category" class="glass-input rounded-xl px-3 py-2 w-1/2 text-sm">
                                                     <option value="accum">คะแนนเก็บ</option>
                                                     <option value="midterm">กลางภาค</option>
                                                     <option value="final">ปลายภาค</option>
                                                     <option value="special">พิเศษ</option>
                                                 </select>
                                             </div>
-                                            <div id="chapter-wrapper" class="bg-black/20 p-2 rounded-lg">
-                                                <p class="text-xs text-white/50 mb-1">เก็บในช่องคะแนนที่:</p>
+                                            <div id="chapter-wrapper" class="bg-slate-50 p-2 rounded-xl border border-slate-200">
+                                                <p class="text-xs text-slate-500 mb-1">เก็บในช่องคะแนน:</p>
                                                 <div class="flex justify-between gap-1">
-                                                    <label class="cursor-pointer relative"><input type="checkbox" value="1" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs border border-white/20 hover:bg-white/20 transition-all">1</div></label>
-                                                    <label class="cursor-pointer relative"><input type="checkbox" value="2" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs border border-white/20 hover:bg-white/20 transition-all">2</div></label>
-                                                    <label class="cursor-pointer relative"><input type="checkbox" value="3" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs border border-white/20 hover:bg-white/20 transition-all">3</div></label>
-                                                    <label class="cursor-pointer relative"><input type="checkbox" value="4" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs border border-white/20 hover:bg-white/20 transition-all">4</div></label>
-                                                    <label class="cursor-pointer relative"><input type="checkbox" value="5" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-xs border border-white/20 hover:bg-white/20 transition-all">5</div></label>
+                                                    <label class="cursor-pointer relative"><input type="checkbox" value="1" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs border border-slate-200 hover:bg-blue-50 transition-all">1</div></label>
+                                                    <label class="cursor-pointer relative"><input type="checkbox" value="2" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs border border-slate-200 hover:bg-blue-50 transition-all">2</div></label>
+                                                    <label class="cursor-pointer relative"><input type="checkbox" value="3" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs border border-slate-200 hover:bg-blue-50 transition-all">3</div></label>
+                                                    <label class="cursor-pointer relative"><input type="checkbox" value="4" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs border border-slate-200 hover:bg-blue-50 transition-all">4</div></label>
+                                                    <label class="cursor-pointer relative"><input type="checkbox" value="5" class="hidden chapter-checkbox"><div class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-xs border border-slate-200 hover:bg-blue-50 transition-all">5</div></label>
                                                 </div>
                                             </div>
-                                            <button type="submit" class="btn-yellow w-full py-2 rounded-lg text-sm font-bold mt-1">สร้างงาน</button>
+                                            <button type="submit" class="btn-warning w-full py-2 rounded-xl text-sm font-bold mt-1 shadow-md">สร้างงาน</button>
                                         </form>
                                     </div>
                                     
-                                    <div class="bg-white/5 p-4 rounded-xl border border-white/10 md:col-span-2">
-                                        <h4 class="font-bold text-yellow-400 mb-2">5. ตารางสอน (สำหรับเช็คชื่ออัตโนมัติ)</h4>
+                                    <div class="bg-white/50 p-5 rounded-2xl border border-white shadow-sm md:col-span-2">
+                                        <h4 class="font-bold text-blue-600 mb-3">5. ตารางสอน (Auto Check)</h4>
                                         <form id="form-schedule" class="flex flex-wrap gap-2 items-end">
-                                            <select id="sch-day" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50 w-32">
+                                            <select id="sch-day" class="glass-input rounded-xl px-3 py-2 text-sm w-32">
                                                 <option value="1">จันทร์</option><option value="2">อังคาร</option><option value="3">พุธ</option>
                                                 <option value="4">พฤหัส</option><option value="5">ศุกร์</option>
                                             </select>
-                                            <select id="sch-period" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50 w-24">
+                                            <select id="sch-period" class="glass-input rounded-xl px-3 py-2 text-sm w-24">
                                                 <option value="1">คาบ 1</option><option value="2">คาบ 2</option><option value="3">คาบ 3</option>
                                                 <option value="4">คาบ 4</option><option value="5">คาบ 5</option><option value="6">คาบ 6</option>
                                                 <option value="7">คาบ 7</option><option value="8">คาบ 8</option>
                                             </select>
-                                            <select id="sch-class" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50 w-32"></select>
-                                            <button type="submit" class="btn-blue px-4 py-2 rounded-lg text-sm font-bold flex-1">บันทึก</button>
+                                            <select id="sch-class" class="glass-input rounded-xl px-3 py-2 text-sm w-32"></select>
+                                            <button type="submit" class="btn-primary px-4 py-2 rounded-xl text-sm font-bold flex-1 shadow-md">บันทึก</button>
                                         </form>
                                         <div id="schedule-list" class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2"></div>
                                     </div>
                                 </div>
                             </section>
                             
-                            <section id="admin-panel-scan" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6">
+                            <section id="admin-panel-scan" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6 bg-white/60">
                                 <div class="flex flex-col md:flex-row gap-4">
-                                    <select id="scan-class-select" class="glass-input rounded-xl px-4 py-3 text-lg font-bold bg-black/50 flex-1"></select>
-                                    <select id="scan-task-select" class="glass-input rounded-xl px-4 py-3 text-lg font-bold bg-black/50 flex-1"></select>
+                                    <select id="scan-class-select" class="glass-input rounded-xl px-4 py-3 text-lg font-bold flex-1"></select>
+                                    <select id="scan-task-select" class="glass-input rounded-xl px-4 py-3 text-lg font-bold flex-1"></select>
                                 </div>
-                                <div class="glass-ios p-4 rounded-xl flex flex-col items-center gap-4 bg-white/5">
-                                    <input id="scan-score-input" type="text" placeholder="ยิงบาร์โค้ด หรือ พิมพ์รหัส..." class="w-full max-w-md glass-input text-center text-2xl font-bold py-3 rounded-xl border-2 border-yellow-500/50 focus:border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.2)]">
+                                <div class="glass-ios p-6 rounded-2xl flex flex-col items-center gap-4 bg-white/80 shadow-sm border border-white">
+                                    <input id="scan-score-input" type="text" placeholder="ยิงบาร์โค้ด หรือ พิมพ์รหัส..." class="w-full max-w-md glass-input text-center text-2xl font-bold py-3 rounded-2xl border-2 focus:border-blue-500 shadow-inner">
                                     <div id="score-buttons-container" class="flex flex-wrap justify-center gap-2"></div>
-                                    <button id="btn-score-manual" onclick="setScoreMode('manual')" class="btn-score py-2 px-6 rounded-lg border border-white/20 bg-white/5 text-white hover:bg-white/10 btn-score-active">กรอกเอง</button>
+                                    <button id="btn-score-manual" onclick="setScoreMode('manual')" class="btn-score-active py-2 px-6 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all font-bold">กรอกเอง</button>
                                 </div>
                                 <div id="score-roster-grid" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3"></div>
                             </section>
 
-                            <section id="admin-panel-individual" class="admin-panel hidden glass-ios rounded-3xl p-6">
+                            <section id="admin-panel-individual" class="admin-panel hidden glass-ios rounded-3xl p-6 bg-white/60">
                                 <div class="relative max-w-md mx-auto mb-6">
-                                    <input id="individual-search" type="text" placeholder="ค้นหาชื่อ หรือ รหัส..." onkeyup="searchIndividual(this.value)" class="w-full glass-input rounded-full px-5 py-3 pl-12">
-                                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-white/50"></i>
-                                    <div id="individual-search-results" class="absolute top-full left-0 w-full bg-slate-900 border border-white/10 rounded-xl mt-2 max-h-60 overflow-y-auto hidden z-20 shadow-2xl"></div>
+                                    <input id="individual-search" type="text" placeholder="ค้นหาชื่อ หรือ รหัส..." onkeyup="searchIndividual(this.value)" class="w-full glass-input rounded-full px-5 py-3 pl-12 shadow-sm">
+                                    <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                    <div id="individual-search-results" class="absolute top-full left-0 w-full bg-white border border-slate-100 rounded-xl mt-2 max-h-60 overflow-y-auto hidden z-20 shadow-xl"></div>
                                 </div>
                                 <div id="individual-result-container" class="hidden flex flex-col gap-6">
-                                    <div class="flex items-center gap-4 p-4 glass-ios rounded-2xl bg-white/5">
-                                        <div class="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                                    <div class="flex items-center gap-4 p-6 glass-ios rounded-2xl bg-white shadow-sm border border-white">
+                                        <div class="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
                                             <i class="fa-regular fa-user"></i>
                                         </div>
                                         <div>
-                                            <h2 id="ind-name" class="text-xl font-bold text-white"></h2>
-                                            <p class="text-white/50 text-sm"><span id="ind-id"></span> | <span id="ind-class" class="text-yellow-400"></span></p>
+                                            <h2 id="ind-name" class="text-xl font-bold text-slate-800"></h2>
+                                            <p class="text-slate-500 text-sm"><span id="ind-id"></span> | <span id="ind-class" class="text-blue-600 font-bold"></span></p>
                                         </div>
                                         <div class="ml-auto text-right">
-                                            <div class="text-xs text-white/50">เกรดคาดการณ์</div>
-                                            <div id="ind-gpa" class="text-3xl font-bold text-green-400">4</div>
+                                            <div class="text-xs text-slate-400">เกรดคาดการณ์</div>
+                                            <div id="ind-gpa" class="text-3xl font-bold text-green-500">4</div>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="glass-ios p-4 rounded-2xl bg-white/5">
-                                            <h4 class="font-bold text-white mb-3"><i class="fa-solid fa-clock-rotate-left text-blue-400 mr-2"></i>การเข้าเรียน</h4>
+                                        <div class="glass-ios p-6 rounded-2xl bg-white/80 shadow-sm border border-white">
+                                            <h4 class="font-bold text-slate-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-blue-500"></i>การเข้าเรียน</h4>
                                             <div class="flex justify-around text-center mb-3">
-                                                <div><div id="ind-att-present" class="text-2xl font-bold text-green-400">0</div><div class="text-xs text-white/50">มา</div></div>
-                                                <div><div id="ind-att-leave" class="text-2xl font-bold text-yellow-400">0</div><div class="text-xs text-white/50">ลา</div></div>
-                                                <div><div id="ind-att-absent" class="text-2xl font-bold text-red-400">0</div><div class="text-xs text-white/50">ขาด</div></div>
+                                                <div><div id="ind-att-present" class="text-2xl font-bold text-green-500">0</div><div class="text-xs text-slate-400">มา</div></div>
+                                                <div><div id="ind-att-leave" class="text-2xl font-bold text-yellow-500">0</div><div class="text-xs text-slate-400">ลา</div></div>
+                                                <div><div id="ind-att-absent" class="text-2xl font-bold text-red-500">0</div><div class="text-xs text-slate-400">ขาด</div></div>
                                             </div>
-                                            <div class="text-xs text-white/70 bg-black/20 p-2 rounded">
-                                                <span class="font-bold text-red-400">วันที่ขาด:</span> <span id="ind-absent-dates">-</span>
+                                            <div class="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                                                <span class="font-bold text-red-500">วันที่ขาด:</span> <span id="ind-absent-dates">-</span>
                                             </div>
                                         </div>
-                                        <div class="glass-ios p-4 rounded-2xl bg-white/5">
-                                            <h4 class="font-bold text-white mb-3"><i class="fa-solid fa-list-check text-orange-400 mr-2"></i>การส่งงาน</h4>
-                                            <div class="w-full bg-white/10 h-2 rounded-full mb-2 overflow-hidden">
-                                                <div id="ind-work-bar" class="bg-gradient-to-r from-orange-500 to-red-500 h-full w-0 transition-all duration-500"></div>
+                                        <div class="glass-ios p-6 rounded-2xl bg-white/80 shadow-sm border border-white">
+                                            <h4 class="font-bold text-slate-700 mb-3 flex items-center gap-2"><i class="fa-solid fa-list-check text-orange-500"></i>งานค้าง</h4>
+                                            <div class="w-full bg-slate-100 h-2 rounded-full mb-2 overflow-hidden">
+                                                <div id="ind-work-bar" class="bg-gradient-to-r from-orange-400 to-red-400 h-full w-0 transition-all duration-500"></div>
                                             </div>
-                                            <div class="text-right text-xs text-white/50 mb-3" id="ind-work-progress-text">0%</div>
+                                            <div class="text-right text-xs text-slate-400 mb-3" id="ind-work-progress-text">0%</div>
                                             <div id="ind-missing-list" class="space-y-1 max-h-32 overflow-y-auto pr-1"></div>
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <section id="admin-panel-report" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6">
+                            <section id="admin-panel-report" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6 bg-white/60">
                                 <div class="flex gap-4 no-print">
-                                    <select id="report-subject" class="glass-input rounded-xl px-3 py-2 w-full md:w-1/3 bg-black/50"></select>
-                                    <select id="report-class" class="glass-input rounded-xl px-3 py-2 w-full md:w-1/3 bg-black/50"></select>
+                                    <select id="report-subject" class="glass-input rounded-xl px-3 py-2 w-full md:w-1/3"></select>
+                                    <select id="report-class" class="glass-input rounded-xl px-3 py-2 w-full md:w-1/3"></select>
                                     <div class="flex gap-2 w-full md:w-1/3">
-                                        <button onclick="printOfficialReport()" class="flex-1 btn-blue rounded-xl font-bold"><i class="fa-solid fa-print"></i></button>
-                                        <button onclick="exportGradeCSV()" class="flex-1 btn-yellow rounded-xl font-bold">CSV</button>
+                                        <button onclick="printOfficialReport()" class="flex-1 btn-primary rounded-xl font-bold shadow-md"><i class="fa-solid fa-print mr-2"></i>พิมพ์</button>
+                                        <button onclick="exportGradeCSV()" class="flex-1 btn-warning rounded-xl font-bold shadow-md">CSV</button>
                                     </div>
                                 </div>
-                                <div class="overflow-x-auto rounded-xl border border-white/10">
+                                <div class="overflow-x-auto rounded-xl border border-white shadow-sm bg-white">
                                     <table class="w-full text-sm">
-                                        <thead class="bg-white/5 border-b border-white/10">
+                                        <thead class="bg-slate-50 border-b border-slate-100 text-slate-600">
                                             <tr id="report-table-header"></tr>
                                         </thead>
-                                        <tbody id="report-table-body" class="divide-y divide-white/5"></tbody>
+                                        <tbody id="report-table-body" class="divide-y divide-slate-100 text-slate-700"></tbody>
                                     </table>
                                 </div>
                             </section>
                             
-                            <section id="admin-panel-attendance" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6">
-                                <div id="smart-att-banner" class="hidden bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-4 rounded-xl shadow-lg flex justify-between items-center animate-fade-in">
+                            <section id="admin-panel-attendance" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6 bg-white/60">
+                                <div id="smart-att-banner" class="hidden bg-gradient-to-r from-blue-500 to-purple-500 p-4 rounded-xl shadow-lg flex justify-between items-center animate-fade-in text-white">
                                     <div class="flex items-center gap-3">
                                         <div class="bg-white/20 p-2 rounded-full animate-pulse"><i class="fa-solid fa-wifi text-white"></i></div>
                                         <div>
-                                            <div class="text-white font-bold text-sm">ตรวจพบคาบเรียนปัจจุบัน (คาบ <span id="smart-period"></span>)</div>
+                                            <div class="font-bold text-sm">คาบเรียนปัจจุบัน (คาบ <span id="smart-period"></span>)</div>
                                             <div class="text-white/80 text-xs">ห้อง <span id="smart-class-name" class="font-bold text-yellow-300"></span></div>
                                         </div>
                                     </div>
-                                    <button onclick="useSmartClass()" class="bg-white text-purple-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-md hover:scale-105 transition-transform">เช็คห้องนี้</button>
+                                    <button onclick="useSmartClass()" class="bg-white text-purple-600 px-4 py-1.5 rounded-full text-xs font-bold shadow-md hover:scale-105 transition-transform">เลือก</button>
                                 </div>
                                 
                                 <div class="flex flex-col md:flex-row gap-4">
-                                    <select id="att-class-select" class="glass-input rounded-xl px-4 py-3 bg-black/50 flex-1"></select>
-                                    <input id="att-date-input" type="date" class="glass-input rounded-xl px-4 py-3 bg-black/50">
+                                    <select id="att-class-select" class="glass-input rounded-xl px-4 py-3 flex-1"></select>
+                                    <input id="att-date-input" type="date" class="glass-input rounded-xl px-4 py-3">
                                 </div>
-                                <div class="glass-ios p-4 rounded-xl flex flex-col items-center gap-4 bg-white/5">
-                                    <div class="flex gap-2 w-full justify-center">
-                                        <button id="btn-att-present" onclick="setAttMode('มา')" class="flex-1 py-2 rounded-lg border border-green-500/50 text-green-400 hover:bg-green-500/20 font-bold transition-all">มา</button>
-                                        <button id="btn-att-leave" onclick="setAttMode('ลา')" class="flex-1 py-2 rounded-lg border border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20 font-bold transition-all">ลา</button>
-                                        <button id="btn-att-absent" onclick="setAttMode('ขาด')" class="flex-1 py-2 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/20 font-bold transition-all">ขาด</button>
+                                <div class="glass-ios p-6 rounded-2xl flex flex-col items-center gap-4 bg-white/80 shadow-sm border border-white">
+                                    <div class="flex gap-2 w-full justify-center flex-wrap">
+                                        <button id="btn-att-present" onclick="setAttMode('มา')" class="flex-1 py-3 rounded-xl bg-green-50 text-green-600 hover:bg-green-100 font-bold transition-all border border-green-200 shadow-sm">มา</button>
+                                        <button id="btn-att-leave" onclick="setAttMode('ลา')" class="flex-1 py-3 rounded-xl bg-yellow-50 text-yellow-600 hover:bg-yellow-100 font-bold transition-all border border-yellow-200 shadow-sm">ลา</button>
+                                        <button id="btn-att-absent" onclick="setAttMode('ขาด')" class="flex-1 py-3 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 font-bold transition-all border border-red-200 shadow-sm">ขาด</button>
+                                        <button id="btn-att-activity" onclick="setAttMode('กิจกรรม')" class="flex-1 py-3 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 font-bold transition-all border border-orange-200 shadow-sm">กิจกรรม</button>
                                     </div>
-                                    <input id="att-scan-input" type="text" placeholder="ยิงบาร์โค้ดเช็คชื่อ..." class="w-full max-w-md glass-input text-center text-xl font-bold py-3 rounded-xl border border-white/20">
+                                    <input id="att-scan-input" type="text" placeholder="ยิงบาร์โค้ดเช็คชื่อ..." class="w-full max-w-md glass-input text-center text-xl font-bold py-3 rounded-xl shadow-inner">
                                 </div>
-                                <div class="flex justify-between text-xs text-white/50 px-2">
-                                    <span>มา: <b id="stat-present" class="text-green-400">0</b></span>
-                                    <span>ลา: <b id="stat-leave" class="text-yellow-400">0</b></span>
-                                    <span>ขาด: <b id="stat-absent" class="text-red-400">0</b></span>
-                                    <button onclick="exportAttendanceCSV()" class="text-blue-400 hover:underline"><i class="fa-solid fa-file-csv mr-1"></i>Export</button>
+                                <div class="flex justify-between text-xs text-slate-500 px-2 bg-white/50 p-2 rounded-lg">
+                                    <span>มา: <b id="stat-present" class="text-green-500">0</b></span>
+                                    <span>ลา: <b id="stat-leave" class="text-yellow-500">0</b></span>
+                                    <span>ขาด: <b id="stat-absent" class="text-red-500">0</b></span>
+                                    <span>กิจกรรม: <b id="stat-activity" class="text-orange-500">0</b></span>
+                                    <button onclick="exportAttendanceCSV()" class="text-blue-500 hover:underline"><i class="fa-solid fa-file-csv mr-1"></i>Export</button>
                                 </div>
                                 <div id="att-roster-grid" class="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3"></div>
                             </section>
                             
-                            <section id="admin-panel-homework" class="admin-panel hidden glass-ios rounded-3xl p-6">
-                                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-inbox text-blue-400"></i> งานที่ส่งมาใหม่</h3>
+                            <section id="admin-panel-homework" class="admin-panel hidden glass-ios rounded-3xl p-6 bg-white/60">
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-inbox text-blue-500"></i> งานที่ส่งมาใหม่</h3>
                                 <div id="incoming-list" class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto"></div>
                             </section>
                             
-                            <section id="admin-panel-material" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6">
-                                <form id="form-material" class="glass-ios p-4 rounded-xl bg-white/5 flex flex-col gap-3">
-                                    <h4 class="font-bold text-white text-sm">เพิ่มสื่อการสอน</h4>
-                                    <select id="mat-subject" class="glass-input rounded-lg px-3 py-2 text-sm bg-black/50"></select>
-                                    <input id="mat-title" type="text" placeholder="ชื่อเรื่อง" class="glass-input rounded-lg px-3 py-2 text-sm">
-                                    <input id="mat-link" type="text" placeholder="ลิงก์ (Youtube/Drive/Web)" class="glass-input rounded-lg px-3 py-2 text-sm">
-                                    <button type="submit" class="btn-blue py-2 rounded-lg text-sm font-bold">เพิ่ม</button>
+                            <section id="admin-panel-material" class="admin-panel hidden glass-ios rounded-3xl p-6 flex flex-col gap-6 bg-white/60">
+                                <form id="form-material" class="glass-ios p-6 rounded-2xl bg-white shadow-sm border border-white flex flex-col gap-3">
+                                    <h4 class="font-bold text-slate-700 text-sm border-l-4 border-pink-500 pl-2">จัดการสื่อการสอน</h4>
+                                    <select id="mat-subject" class="glass-input rounded-xl px-3 py-2 text-sm"></select>
+                                    <input id="mat-title" type="text" placeholder="ชื่อเรื่อง (เช่น สไลด์บทที่ 1)" class="glass-input rounded-xl px-3 py-2 text-sm">
+                                    <input id="mat-link" type="text" placeholder="ลิงก์ (Youtube/Drive/Web)" class="glass-input rounded-xl px-3 py-2 text-sm">
+                                    <div class="flex gap-2">
+                                        <button type="submit" class="flex-1 btn-primary py-2 rounded-xl text-sm font-bold shadow-md">บันทึก / เพิ่มใหม่</button>
+                                        <button type="button" onclick="document.getElementById('form-material').reset()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 text-sm font-bold">ล้างค่า</button>
+                                    </div>
                                 </form>
-                                <div id="admin-mat-list" class="flex flex-col gap-2"></div>
+                                <div id="admin-mat-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                             </section>
                         </div>
                     </div>
 
                     <div id="section-student" class="hidden flex flex-col gap-5">
                         <div id="student-login-wrapper" class="flex flex-col items-center justify-center py-20 gap-8">
-                            <div class="glass-ios p-10 rounded-3xl w-full max-w-sm flex flex-col items-center relative">
-                                <img src="https://img2.pic.in.th/pic/Logoc404dc85753b800c.png" alt="Logo" class="w-24 h-24 object-contain mb-6 drop-shadow-lg">
-                                <h2 class="text-2xl font-bold text-white mb-6">นักเรียน</h2>
-                                <input id="student-login-id" type="text" class="w-full glass-input rounded-xl px-4 py-3 text-center text-white text-lg" placeholder="รหัสนักเรียน">
-                                <button onclick="handleStudentLogin()" class="w-full py-3 rounded-xl btn-blue font-bold shadow-lg mt-4 text-lg flex items-center justify-center gap-2">
-                                    <span id="student-login-spinner" class="hidden loading-spinner"></span> เข้าใช้งาน
+                            <div class="glass-ios p-10 rounded-3xl w-full max-w-sm flex flex-col items-center relative shadow-xl bg-white/80">
+                                <img src="https://img2.pic.in.th/pic/Logoc404dc85753b800c.png" alt="Logo" class="w-20 h-20 object-contain mb-4">
+                                <h2 class="text-2xl font-bold text-slate-800 mb-6">นักเรียน</h2>
+                                <input id="student-login-id" type="text" class="w-full glass-input rounded-xl px-4 py-3 text-center text-lg font-bold" placeholder="กรอกรหัสนักเรียน">
+                                <button onclick="handleStudentLogin()" class="w-full py-3 rounded-xl btn-primary font-bold shadow-lg mt-4 text-lg flex items-center justify-center gap-2">
+                                    <span id="student-login-spinner" class="hidden loading-spinner border-t-white"></span> เข้าใช้งาน
                                 </button>
                             </div>
                         </div>
                         
                         <div id="student-dashboard" class="hidden flex flex-col gap-6">
-                            <div class="glass-ios p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-500 rounded-full blur-[60px] opacity-20 -mr-10 -mt-10"></div>
+                            <div class="glass-ios p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden bg-white/80 shadow-md">
                                 <div class="relative z-10 flex items-center gap-4">
-                                    <div class="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg ring-4 ring-white/10">
+                                    <div class="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg ring-4 ring-white/50">
                                         <i class="fa-solid fa-user-graduate"></i>
                                     </div>
                                     <div>
-                                        <h2 id="std-dash-name" class="text-2xl font-bold text-white">กำลังโหลด...</h2>
-                                        <p id="std-dash-class" class="text-blue-200 text-sm">Class: -</p>
+                                        <h2 id="std-dash-name" class="text-2xl font-bold text-slate-800">กำลังโหลด...</h2>
+                                        <p id="std-dash-class" class="text-slate-500 text-sm">Class: -</p>
                                     </div>
                                 </div>
-                                <button onclick="handleLogout()" class="relative z-10 px-5 py-2 bg-white/10 hover:bg-red-500/20 text-white/70 hover:text-red-300 rounded-xl text-sm font-bold transition-all border border-white/5">
+                                <button onclick="handleLogout()" class="relative z-10 px-5 py-2 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl text-sm font-bold transition-all">
                                     <i class="fa-solid fa-right-from-bracket mr-2"></i>ออกจากระบบ
                                 </button>
                             </div>
 
-                            <div id="std-subjects-container" class="grid grid-cols-1 gap-6">
-                                </div>
+                            <div id="std-subjects-container" class="grid grid-cols-1 gap-6"></div>
 
-                            <div class="glass-ios p-6 rounded-3xl">
-                                <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <i class="fa-regular fa-calendar-check text-yellow-400"></i> ประวัติการเข้าเรียน
+                            <div class="glass-ios p-6 rounded-3xl bg-white/80 shadow-sm">
+                                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <i class="fa-regular fa-calendar-check text-blue-500"></i> ประวัติการเข้าเรียน
                                 </h3>
-                                <div class="overflow-hidden rounded-xl border border-white/10">
+                                <div class="overflow-hidden rounded-xl border border-slate-200">
                                     <table class="w-full">
-                                        <thead class="bg-white/5 text-left text-xs text-white/50 uppercase">
+                                        <thead class="bg-slate-50 text-left text-xs text-slate-500 uppercase">
                                             <tr>
                                                 <th class="px-4 py-3">วันที่</th>
                                                 <th class="px-4 py-3 text-center">สถานะ</th>
                                             </tr>
                                         </thead>
-                                        <tbody id="std-att-body" class="divide-y divide-white/5 text-sm">
-                                            <tr><td colspan="2" class="px-4 py-3 text-center text-white/30">ไม่มีข้อมูล</td></tr>
+                                        <tbody id="std-att-body" class="divide-y divide-slate-100 text-sm text-slate-700">
+                                            <tr><td colspan="2" class="px-4 py-3 text-center text-slate-400">ไม่มีข้อมูล</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -388,111 +434,90 @@
                 </div>
             </main>
             
-            <div id="subject-config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-                <div class="glass-ios p-6 rounded-2xl w-full max-w-md m-4 border border-white/20 shadow-2xl animate-fade-in">
-                    <h3 class="text-xl font-bold text-white mb-1">ตั้งค่าคะแนน</h3>
-                    <p class="text-xs text-white/50 mb-4" id="config-subject-name"></p>
+            <div id="subject-config-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div class="glass-ios p-6 rounded-3xl w-full max-w-md m-4 bg-white shadow-2xl animate-fade-in">
+                    <h3 class="text-xl font-bold text-slate-800 mb-1">ตั้งค่าคะแนน</h3>
+                    <p class="text-xs text-slate-500 mb-4" id="config-subject-name"></p>
                     <input type="hidden" id="config-subject-id">
                     <div id="config-slots-container" class="space-y-2 mb-4"></div>
-                    <div class="flex justify-between items-center mb-4 text-sm bg-black/20 p-2 rounded">
-                        <span class="text-white/70">รวมคะแนนเก็บ:</span>
-                        <span id="config-total-score" class="font-bold text-white">0</span>
+                    <div class="flex justify-between items-center mb-4 text-sm bg-slate-100 p-3 rounded-xl">
+                        <span class="text-slate-600">รวมคะแนนเก็บ:</span>
+                        <span id="config-total-score" class="font-bold text-slate-800">0</span>
                     </div>
                     <div class="flex gap-2">
-                        <button id="btn-add-slot" onclick="addConfigSlot()" class="flex-1 py-2 rounded-lg border border-dashed border-white/30 text-white/50 hover:text-white hover:border-white text-xs"><i class="fa-solid fa-plus mr-1"></i>เพิ่มช่อง</button>
-                        <button onclick="saveSubjectConfig()" class="flex-1 btn-blue py-2 rounded-lg font-bold">บันทึก</button>
-                        <button onclick="document.getElementById('subject-config-modal').classList.add('hidden')" class="px-3 text-white/50 hover:text-white">ปิด</button>
+                        <button onclick="addConfigSlot()" class="flex-1 py-2 rounded-xl border border-dashed border-slate-300 text-slate-500 hover:text-blue-500 hover:border-blue-500 text-xs"><i class="fa-solid fa-plus mr-1"></i>เพิ่มช่อง</button>
+                        <button onclick="saveSubjectConfig()" class="flex-1 btn-primary py-2 rounded-xl font-bold shadow-md">บันทึก</button>
+                        <button onclick="document.getElementById('subject-config-modal').classList.add('hidden')" class="px-3 text-slate-400 hover:text-slate-600">ปิด</button>
                     </div>
                 </div>
             </div>
 
-            <div id="score-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-                <div class="glass-ios p-6 rounded-3xl w-full max-w-sm m-4 border border-white/20 shadow-2xl text-center animate-fade-in">
-                    <h3 class="text-lg font-bold text-white mb-2" id="modal-task-name"></h3>
-                    <p class="text-yellow-400 mb-6 text-xl" id="modal-student-name"></p>
-                    <input id="modal-score-input" type="number" class="glass-input text-4xl text-center w-32 h-20 rounded-2xl font-bold mb-2 focus:ring-4 ring-blue-500/50" placeholder="0">
-                    <p class="text-white/30 text-xs mb-6">คะแนนเต็ม <span id="modal-max-score"></span></p>
+            <div id="score-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div class="glass-ios p-8 rounded-[2rem] w-full max-w-sm m-4 bg-white shadow-2xl text-center animate-fade-in">
+                    <h3 class="text-lg font-bold text-slate-800 mb-1" id="modal-task-name"></h3>
+                    <p class="text-blue-500 mb-6 text-xl font-bold" id="modal-student-name"></p>
+                    <input id="modal-score-input" type="number" class="glass-input text-5xl text-center w-32 h-24 rounded-3xl font-bold mb-2 focus:ring-4 ring-blue-100 text-slate-700" placeholder="0">
+                    <p class="text-slate-400 text-xs mb-6">คะแนนเต็ม <span id="modal-max-score"></span></p>
                     <div class="flex gap-3">
-                        <button id="btn-modal-save" class="flex-1 btn-blue py-3 rounded-xl font-bold shadow-lg">บันทึก</button>
-                        <button onclick="closeScoreModal()" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 rounded-xl font-bold">ยกเลิก</button>
+                        <button id="btn-modal-save" class="flex-1 btn-primary py-3 rounded-xl font-bold shadow-lg text-lg">บันทึก</button>
+                        <button onclick="closeScoreModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 py-3 rounded-xl font-bold">ยกเลิก</button>
                     </div>
                 </div>
             </div>
             
-            <div id="submit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-                <div class="glass-ios p-6 rounded-3xl w-full max-w-md m-4 border border-white/20 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
-                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
-                        <h3 class="text-lg font-bold text-white" id="submit-modal-title">ส่งงาน</h3>
-                        <button onclick="document.getElementById('submit-modal').classList.add('hidden')" class="text-white/50 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <div id="submit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+                <div class="glass-ios p-6 rounded-3xl w-full max-w-md m-4 bg-white shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                        <h3 class="text-lg font-bold text-slate-800" id="submit-modal-title">ส่งงาน</h3>
+                        <button onclick="document.getElementById('submit-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     
-                    <div id="modal-feedback-display" class="hidden mb-4 bg-orange-500/10 border border-orange-500/30 p-3 rounded-xl">
-                        <p class="text-orange-400 text-xs font-bold mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>งานถูกส่งคืนให้แก้ไข:</p>
-                        <p id="modal-feedback-text" class="text-white/80 text-sm italic"></p>
+                    <div id="modal-feedback-display" class="hidden mb-4 bg-orange-50 border border-orange-200 p-4 rounded-2xl">
+                        <p class="text-orange-600 text-xs font-bold mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i>งานถูกส่งคืนให้แก้ไข:</p>
+                        <p id="modal-feedback-text" class="text-slate-700 text-sm italic"></p>
                     </div>
 
                     <form id="form-submit-work" class="flex flex-col gap-4">
                         <input type="hidden" id="submit-task-id">
                         <input type="hidden" id="submit-student-id">
-                        
                         <div>
-                            <label class="text-xs text-white/50 mb-1 block">ลิงก์ผลงาน (Google Drive, Canva, etc.)</label>
+                            <label class="text-xs text-slate-500 mb-1 block font-bold">ลิงก์ผลงาน</label>
                             <input id="submit-link-input" type="url" required placeholder="https://..." class="glass-input w-full rounded-xl px-4 py-3 text-sm">
                         </div>
-                        
                         <div>
-                            <label class="text-xs text-white/50 mb-1 block">ข้อความถึงครู (ถ้ามี)</label>
-                            <textarea id="submit-comment-input" rows="2" placeholder="แจ้งรายชื่อเพื่อนในกลุ่ม หรือรายละเอียดอื่นๆ..." class="glass-input w-full rounded-xl px-4 py-3 text-sm"></textarea>
+                            <label class="text-xs text-slate-500 mb-1 block font-bold">ข้อความถึงครู</label>
+                            <textarea id="submit-comment-input" rows="2" placeholder="รายละเอียดอื่นๆ..." class="glass-input w-full rounded-xl px-4 py-3 text-sm"></textarea>
                         </div>
-
-                        <div class="bg-white/5 p-3 rounded-xl border border-white/10">
-                            <label class="text-xs text-yellow-400 font-bold mb-2 block flex justify-between">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="text-xs text-blue-600 font-bold mb-2 block flex justify-between">
                                 <span><i class="fa-solid fa-users mr-1"></i>ส่งเผื่อเพื่อน (งานกลุ่ม)</span>
-                                <span class="text-[10px] font-normal text-white/50 opacity-70">เลือกได้เฉพาะเพื่อนในห้องเดียวกัน</span>
                             </label>
-                            <input type="text" id="friend-search" placeholder="ค้นหาชื่อเพื่อน..." class="glass-input w-full rounded-lg px-2 py-1 text-xs mb-2 bg-black/30">
+                            <input type="text" id="friend-search" placeholder="ค้นหาชื่อเพื่อน..." class="glass-input w-full rounded-lg px-3 py-2 text-xs mb-2 bg-white">
                             <div id="friend-selector-container" class="max-h-32 overflow-y-auto space-y-1 pr-1"></div>
                         </div>
-
-                        <button type="submit" id="btn-submit-final" class="btn-blue w-full py-3 rounded-xl font-bold shadow-lg mt-2">ยืนยันการส่งงาน</button>
+                        <button type="submit" id="btn-submit-final" class="btn-primary w-full py-3 rounded-xl font-bold shadow-md mt-2">ยืนยันการส่งงาน</button>
                     </form>
                 </div>
             </div>
             
-            <div id="toast-notification" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-600 to-teal-600 text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3 translate-y-20 opacity-0 font-bold border border-green-400/50"><i class="fa-solid fa-circle-check text-2xl"></i><span id="toast-message" class="text-lg">บันทึกสำเร็จ</span></div>
-        </div>
-    </div>
-    
-    <div id="print-area" class="hidden">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="font-size: 18px; font-weight: bold;">แบบบันทึกคะแนนเก็บรายวิชาภาษาจีน</h2>
-            <p id="print-subtitle" style="font-size: 14px;"></p>
-        </div>
-        <table id="print-table">
-            <thead>
-                <tr class="column-header">
-                    </tr>
-            </thead>
-            <tbody id="print-table-body">
-                </tbody>
-        </table>
-        <div style="margin-top: 30px; display: flex; justify-content: space-between; padding: 0 50px;">
-            <div style="text-align: center;">
-                <p>ลงชื่อ.........................................................ครูผู้สอน</p>
-                <p>(นายกีรติ ประสพพรรังสี)</p>
-            </div>
-            <div style="text-align: center;">
-                <p>ลงชื่อ.........................................................หัวหน้ากลุ่มสาระฯ</p>
-                <p>(.........................................................)</p>
-            </div>
+            <div id="toast-notification" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3 translate-y-20 opacity-0 font-bold border border-slate-700"><i class="fa-solid fa-circle-check text-green-400 text-2xl"></i><span id="toast-message" class="text-lg">บันทึกสำเร็จ</span></div>
         </div>
     </div>
 
+    <div id="print-area" class="hidden">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2>แบบบันทึกคะแนนเก็บรายวิชาภาษาจีน</h2>
+            <p id="print-subtitle"></p>
+        </div>
+        <table id="print-table">
+            <thead><tr class="column-header"></tr></thead>
+            <tbody id="print-table-body"></tbody>
+        </table>
+    </div>
+
     <script>
-        // ***********************************************
-        // ⚠️ เปลี่ยน URL ด้านล่างให้เป็น URL ของ Google Apps Script ที่ Deploy ใหม่ของคุณ
+        // ⚠️ URL Script (เปลี่ยนเป็นของคุณ)
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQNjMSE06u5xO4dtyipa5P-YzoaicppubdwlUgMpaX4L4TUjk3-xY2PRnzhS42AxZe/exec"; 
-        // ***********************************************
 
         let dataState = { subjects: [], classes: [], students: [], tasks: [], scores: [], attendance: [], materials: [], submissions: [], returns: [], schedules: [] };
         let scoreMode = 'manual'; 
@@ -516,13 +541,12 @@
                 checkSmartSchedule();
                 scheduleInterval = setInterval(checkSmartSchedule, 60000);
                 syncInterval = setInterval(syncData, 60000);
-                window.addEventListener('beforeunload', cleanup);
             } catch (error) { console.error(error); showToast("Init Error", "bg-red-600"); }
         }
 
+        // ... (Basic Helpers unchanged: cleanup, timer, syncData, localStorage) ...
         function cleanup() { if (inactivityTimer) clearTimeout(inactivityTimer); if (scheduleInterval) clearInterval(scheduleInterval); if (syncInterval) clearInterval(syncInterval); }
         function setupInactivityTimer() { const logout = () => { showToast("หมดเวลาการใช้งาน", "bg-yellow-600"); handleLogout(true); }; const reset = () => { clearTimeout(inactivityTimer); inactivityTimer = setTimeout(logout, 30 * 60 * 1000); }; window.addEventListener('click', reset); window.addEventListener('keypress', reset); reset(); }
-
         async function syncData() {
             try {
                 const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getData&t=${Date.now()}`);
@@ -534,14 +558,13 @@
                 }
             } catch(e) { console.warn('Offline mode'); }
         }
-
         function saveToLocalStorage() { localStorage.setItem('wany_data_backup', JSON.stringify({ timestamp: Date.now(), data: dataState })); }
         function loadFromLocalStorage() { try { const b = localStorage.getItem('wany_data_backup'); if(b) { const p = JSON.parse(b); if(Date.now() - p.timestamp < 1800000) dataState = p.data; } } catch(e){} }
         
         window.handleLogout = function(force = false) { if (force || confirm("ออกจากระบบ?")) { cleanup(); localStorage.removeItem('wany_admin_session'); localStorage.removeItem('current_student_code'); location.reload(); } };
-        
         function showAdminPanel(auto = false) { document.getElementById('admin-login-wrapper').classList.add('hidden'); document.getElementById('admin-content-wrapper').classList.remove('hidden'); refreshUI(); if (!auto) syncData(); }
 
+        // --- CORE UI LOGIC ---
         function refreshUI() {
             refreshDropdowns(); renderSubjectList(); renderScheduleList(); checkSmartSchedule();
             if(!document.getElementById('admin-content-wrapper').classList.contains('hidden')) {
@@ -553,51 +576,150 @@
             }
         }
 
-        // --- Logic & Render Functions (Condensed for brevity but fully functional) ---
-        let searchDebounceTimer;
-        window.searchIndividual = (term) => {
-            clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(() => {
-                const div = document.getElementById('individual-search-results');
-                if(!div) return;
-                div.innerHTML = '';
-                if(term.length < 2) { div.classList.add('hidden'); return; }
-                const matches = dataState.students.filter(s => (s.name && s.name.includes(term)) || (s.code && String(s.code).includes(term)));
-                if(matches.length === 0) div.innerHTML = '<div class="p-3 text-white/50 text-sm">ไม่พบข้อมูล</div>';
-                else matches.slice(0,10).forEach(s => {
-                    const el = document.createElement('div');
-                    el.className = "p-3 hover:bg-white/10 cursor-pointer border-b border-white/5 text-sm text-white";
-                    el.innerHTML = `<span class="text-yellow-400">${s.name}</span> <span class="text-xs">(${dataState.classes.find(c=>c.id==s.classId)?.name})</span>`;
-                    el.onclick = () => { document.getElementById('individual-search').value = s.name; div.classList.add('hidden'); showIndividualProfile(s.id); };
-                    div.appendChild(el);
-                });
-                div.classList.remove('hidden');
-            }, 300);
+        // Updated Material Renderer (Beautiful Cards + Edit)
+        function renderAdminMaterials() {
+            const div = document.getElementById('admin-mat-list'); if(!div) return; div.innerHTML='';
+            dataState.materials.forEach(m => {
+                const sub = dataState.subjects.find(s => s.id == m.subjectId)?.name || 'ทั่วไป';
+                div.innerHTML += `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden">
+                        <div class="absolute top-0 right-0 bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-bl-lg font-bold">${sub}</div>
+                        <div class="flex items-start gap-3 mt-2">
+                            <div class="bg-pink-50 text-pink-500 w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"><i class="fa-solid fa-link"></i></div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-slate-700 text-sm truncate">${m.title}</h4>
+                                <a href="${m.link}" target="_blank" class="text-xs text-blue-500 hover:underline truncate block w-full">${m.link}</a>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-3 pt-3 border-t border-slate-50">
+                             <button onclick="editMaterial('${m.id}')" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs py-1.5 rounded-lg font-bold"><i class="fa-solid fa-pen mr-1"></i>แก้ไข</button>
+                             <a href="${m.link}" target="_blank" class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-500 text-center text-xs py-1.5 rounded-lg font-bold">เปิด</a>
+                        </div>
+                    </div>`;
+            });
+        }
+        
+        window.editMaterial = (mid) => {
+            const m = dataState.materials.find(x => x.id == mid);
+            if(m) {
+                document.getElementById('mat-subject').value = m.subjectId;
+                document.getElementById('mat-title').value = m.title;
+                document.getElementById('mat-link').value = m.link;
+                document.querySelector('#admin-panel-material').scrollIntoView({ behavior: 'smooth' });
+                showToast("ดึงข้อมูลมาแก้ไขแล้ว (กดบันทึกเพื่อเพิ่ม)", "bg-blue-600");
+            }
         };
 
-        function showIndividualProfile(sid) {
-            const s = dataState.students.find(x => x.id == sid); if(!s) return;
-            const container = document.getElementById('individual-result-container'); container.classList.remove('hidden');
-            document.getElementById('ind-name').textContent = s.name; document.getElementById('ind-id').textContent = s.code;
-            document.getElementById('ind-class').textContent = dataState.classes.find(c => c.id == s.classId)?.name;
-            const atts = dataState.attendance.filter(a => a.studentId == sid);
-            let p=0, l=0, a=0, aDates=[];
-            atts.forEach(x => { if(x.status=='มา')p++; else if(x.status=='ลา')l++; else { a++; aDates.push(formatThaiDate(x.date)); }});
-            document.getElementById('ind-att-present').textContent=p; document.getElementById('ind-att-leave').textContent=l; document.getElementById('ind-att-absent').textContent=a;
-            document.getElementById('ind-absent-dates').innerHTML = aDates.length ? aDates.join(', ') : '-';
+        // Updated Attendance Renderer (Activity Button + Hold State)
+        function renderAttRoster() {
+            const cid = document.getElementById('att-class-select')?.value; const div = document.getElementById('att-roster-grid');
+            if(!div || !cid) return; div.innerHTML='';
+            const date = document.getElementById('att-date-input').value;
+            let p=0, l=0, a=0, act=0;
             
-            const tasks = dataState.tasks.filter(t => t.classId == s.classId);
-            const mList = document.getElementById('ind-missing-list'); mList.innerHTML='';
-            let done=0;
-            tasks.forEach(t => {
-                if(dataState.scores.some(x=>x.studentId==sid && x.taskId==t.id) || dataState.submissions.some(x=>x.studentId==sid && x.taskId==t.id)) done++;
-                else mList.innerHTML += `<div class="text-xs text-red-300 border-b border-white/5 py-1">${t.name}</div>`;
+            dataState.students.filter(s=>s.classId==cid).sort((a,b)=>Number(a.no)-Number(b.no)).forEach(s=>{
+                const log = dataState.attendance.find(x=>x.studentId==s.id && x.date==date);
+                const st = log ? log.status : 'none';
+                if(st=='มา')p++; else if(st=='ลา')l++; else if(st=='ขาด')a++; else if(st=='กิจกรรม')act++;
+                
+                let cls = 'border-slate-200 text-slate-400';
+                if(st=='มา') cls='status-present border-green-200 text-green-600 bg-green-50';
+                else if(st=='ลา') cls='status-leave border-yellow-200 text-yellow-600 bg-yellow-50';
+                else if(st=='ขาด') cls='status-absent border-red-200 text-red-600 bg-red-50';
+                else if(st=='กิจกรรม') cls='status-activity border-orange-200 text-orange-600 bg-orange-50';
+                
+                div.innerHTML += `<div class="status-box ${cls} p-3 text-center cursor-pointer relative" onclick="if(attMode) saveAtt('${s.id}','${cid}','${date}', attMode)">
+                    <div class="text-[10px] absolute top-1 right-2 opacity-50">#${s.no}</div>
+                    <div class="font-bold text-xs truncate mt-1">${s.name}</div>
+                    <div class="text-[10px] font-bold mt-1">${st=='none'?'-':st}</div>
+                </div>`;
             });
-            const prog = tasks.length ? Math.round((done/tasks.length)*100) : 0;
-            document.getElementById('ind-work-bar').style.width = `${prog}%`; document.getElementById('ind-work-progress-text').textContent = `${prog}%`;
-            document.getElementById('ind-gpa').textContent = calGrade(calculateScores(sid, s.classId, tasks).total);
+            document.getElementById('stat-present').textContent=p; document.getElementById('stat-leave').textContent=l; 
+            document.getElementById('stat-absent').textContent=a; document.getElementById('stat-activity').textContent=act;
         }
 
+        function setAttMode(m) {
+            attMode = m;
+            ['present','leave','absent','activity'].forEach(t => document.getElementById(`btn-att-${t}`).classList.remove(`att-active-${t}`));
+            if(m=='มา') document.getElementById('btn-att-present').classList.add('att-active-present');
+            if(m=='ลา') document.getElementById('btn-att-leave').classList.add('att-active-leave');
+            if(m=='ขาด') document.getElementById('btn-att-absent').classList.add('att-active-absent');
+            if(m=='กิจกรรม') document.getElementById('btn-att-activity').classList.add('att-active-activity');
+            document.getElementById('att-scan-input').focus();
+        }
+
+        // Updated Student Dashboard (Red Card for Pending)
+        function renderStudentDashboard(s) {
+            document.getElementById('std-dash-name').textContent = s.name;
+            document.getElementById('std-dash-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name;
+            const container = document.getElementById('std-subjects-container'); container.innerHTML='';
+            const myTasks = dataState.tasks.filter(t=>t.classId==s.classId);
+            const subs = [...new Set(myTasks.map(t=>t.subjectId))];
+            
+            subs.forEach(subId => {
+                const subj = dataState.subjects.find(x=>x.id==subId); if(!subj) return;
+                const {total} = calculateScores(s.id, s.classId, myTasks.filter(t=>t.subjectId==subId));
+                let html = `<div class="glass-ios p-6 rounded-3xl bg-white/80 shadow-sm border border-white"><h3 class="font-bold text-slate-800 border-l-4 border-blue-500 pl-3 mb-4 text-lg flex justify-between items-center">${subj.name} <span class="text-sm bg-slate-100 px-3 py-1 rounded-full text-slate-600 font-bold">เกรด ${calGrade(total)}</span></h3>`;
+                html += `<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">`;
+                
+                myTasks.filter(t=>t.subjectId==subId).forEach(t => {
+                    const sc = dataState.scores.find(x=>x.studentId==s.id && x.taskId==t.id);
+                    const sub = dataState.submissions.find(x=>x.studentId==s.id && x.taskId==t.id);
+                    const returned = dataState.returns?.find(x => x.studentId == s.id && x.taskId == t.id);
+                    
+                    let cardClass = "bg-white border border-slate-100";
+                    let icon = '<i class="fa-regular fa-clock text-slate-300"></i>';
+                    let statusTxt = "รอส่ง";
+                    let btnClass = "bg-slate-100 text-slate-500 hover:bg-slate-200";
+                    
+                    if (returned) {
+                        cardClass = "bg-orange-50 border border-orange-200 ring-2 ring-orange-100";
+                        icon = '<i class="fa-solid fa-triangle-exclamation text-orange-500 animate-pulse"></i>';
+                        statusTxt = "แก้!";
+                        btnClass = "bg-orange-500 text-white hover:bg-orange-600 shadow-md";
+                    } else if (sc) {
+                        cardClass = "bg-green-50 border border-green-200";
+                        icon = '<i class="fa-solid fa-check-circle text-green-500"></i>';
+                        statusTxt = sc.score;
+                        btnClass = "bg-white text-green-600 border border-green-200";
+                    } else if (sub) {
+                        cardClass = "bg-blue-50 border border-blue-200";
+                        icon = '<i class="fa-solid fa-hourglass-half text-blue-500"></i>';
+                        statusTxt = "รอตรวจ";
+                        btnClass = "bg-blue-100 text-blue-600 hover:bg-blue-200";
+                    } else {
+                        // Pending Work (RED)
+                        cardClass = "card-pending shadow-sm"; // Custom class defined in CSS
+                        icon = '<i class="fa-solid fa-circle-exclamation text-red-500"></i>';
+                        statusTxt = "ยังไม่ส่ง";
+                        btnClass = "bg-red-500 text-white hover:bg-red-600 shadow-md";
+                    }
+
+                    html += `
+                    <div class="${cardClass} p-3 rounded-2xl flex flex-col items-center justify-between text-center transition-all hover:shadow-md h-full relative group">
+                        <div class="text-[10px] text-slate-400 absolute top-2 right-2">${t.category}</div>
+                        <div class="text-2xl mt-2 mb-1">${icon}</div>
+                        <div class="text-xs font-bold text-slate-700 truncate w-full px-1 mb-1">${t.name}</div>
+                        <div class="text-xs font-bold mb-2 ${sc ? 'text-green-600 text-lg' : 'text-slate-500'}">${statusTxt}</div>
+                        <button onclick="openSubmitModal('${t.id}','${s.id}','${t.name}')" class="${btnClass} w-full py-1.5 rounded-lg text-xs font-bold transition-colors">
+                            ${sc ? 'ดู' : 'ส่งงาน'}
+                        </button>
+                    </div>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+            // Attendance History
+            const attBody = document.getElementById('std-att-body'); attBody.innerHTML='';
+            const atts = dataState.attendance.filter(a=>a.studentId==s.id).sort((a,b)=>b.date.localeCompare(a.date));
+            if(!atts.length) attBody.innerHTML='<tr><td colspan="2" class="px-4 py-3 text-center text-slate-400">ไม่มีข้อมูล</td></tr>';
+            else atts.forEach(a=>{
+                let c = a.status=='มา'?'text-green-600':(a.status=='ขาด'?'text-red-600':(a.status=='กิจกรรม'?'text-orange-600':'text-yellow-600'));
+                attBody.innerHTML += `<tr><td class="px-4 py-2 text-slate-500">${formatThaiDate(a.date)}</td><td class="px-4 py-2 text-center font-bold ${c}">${a.status}</td></tr>`;
+            });
+        }
+
+        // --- Standard Logic ---
         function calculateScores(sid, cid, tasks) {
             const cls = dataState.classes.find(c => c.id == cid); if(!cls) return {chapScores:[], midterm:0, final:0, total:0};
             const subj = dataState.subjects.find(s => s.id == cls.subjectId);
@@ -615,7 +737,6 @@
             const chapScores = chapData.map(d => d.max ? Math.round((d.earn/d.max)*d.w) : 0);
             return { chapScores, midterm: mid, final: fin, total: tot + chapScores.reduce((a,b)=>a+b,0) + mid + fin };
         }
-
         function renderGradeReport() {
             const cid = document.getElementById('report-class')?.value; if(!cid) return;
             const cls = dataState.classes.find(c=>c.id==cid); const subj = dataState.subjects.find(s=>s.id==cls.subjectId);
@@ -626,108 +747,38 @@
             const tasks = dataState.tasks.filter(t=>t.classId==cid);
             dataState.students.filter(s=>s.classId==cid).sort((a,b)=>Number(a.no)-Number(b.no)).forEach(s=>{
                 const {chapScores, midterm, final, total} = calculateScores(s.id, cid, tasks);
-                let row = `<td>${s.no}</td><td>${s.name}</td>` + chapScores.map(x=>`<td class="text-yellow-400">${x}</td>`).join('') + `<td>${midterm}</td><td>${final}</td><td>${total}</td><td class="text-green-400 font-bold">${calGrade(total)}</td>`;
+                let row = `<td>${s.no}</td><td class="text-left font-bold text-slate-700">${s.name}</td>` + chapScores.map(x=>`<td class="text-blue-600">${x}</td>`).join('') + `<td>${midterm}</td><td>${final}</td><td class="font-bold bg-slate-50">${total}</td><td class="text-green-600 font-bold">${calGrade(total)}</td>`;
                 tbody.innerHTML += `<tr>${row}</tr>`;
             });
         }
-        
-        function printOfficialReport() {
-            document.getElementById('print-area').style.display='block'; window.print(); document.getElementById('print-area').style.display='none';
-        }
-        
-        function exportGradeCSV() { /* Simplified CSV Logic */ showToast("CSV Exporting..."); }
-        function exportAttendanceCSV() { showToast("Att Exporting..."); }
-
-        function renderScoreRoster() {
-            const cid = document.getElementById('scan-class-select')?.value; const tid = document.getElementById('scan-task-select')?.value;
-            const div = document.getElementById('score-roster-grid'); if(!div) return; div.innerHTML='';
-            if(!cid || !tid) return;
-            dataState.students.filter(s=>s.classId==cid).sort((a,b)=>Number(a.no)-Number(b.no)).forEach(s=>{
-                const sc = dataState.scores.find(x=>x.studentId==s.id && x.taskId==tid);
-                div.innerHTML += `<div class="status-box ${sc?'status-done':'status-none'} p-2 text-center cursor-pointer border border-white/10" onclick="openManualScore('${s.id}','${tid}')"><div class="text-xs opacity-50">No.${s.no}</div><div class="font-bold text-xs truncate">${s.name}</div><div class="text-xl font-bold text-yellow-400">${sc?sc.score:'-'}</div></div>`;
-            });
-        }
-
-        window.openManualScore = (sid, tid) => {
-             const s = dataState.students.find(x=>x.id==sid); const t = dataState.tasks.find(x=>x.id==tid);
-             if(!s || !t) return;
-             pendingScore = {s, t};
-             document.getElementById('score-modal').classList.remove('hidden');
-             document.getElementById('modal-student-name').textContent = s.name;
-             document.getElementById('modal-task-name').textContent = t.name;
-             document.getElementById('modal-max-score').textContent = t.maxScore;
-             document.getElementById('modal-score-input').value = '';
-             document.getElementById('modal-score-input').focus();
-        };
-
-        function renderAttRoster() {
-            const cid = document.getElementById('att-class-select')?.value; const div = document.getElementById('att-roster-grid');
-            if(!div || !cid) return; div.innerHTML='';
-            const date = document.getElementById('att-date-input').value;
-            dataState.students.filter(s=>s.classId==cid).sort((a,b)=>Number(a.no)-Number(b.no)).forEach(s=>{
-                const log = dataState.attendance.find(x=>x.studentId==s.id && x.date==date);
-                const st = log ? log.status : 'none';
-                let color = st=='มา'?'status-done':(st=='ลา'?'border-yellow-500 text-yellow-500':(st=='ขาด'?'border-red-500 text-red-500':'status-none'));
-                div.innerHTML += `<div class="status-box ${color} p-2 text-center cursor-pointer border" onclick="if(attMode) saveAtt('${s.id}','${cid}','${date}', attMode)"><div class="text-xs">No.${s.no}</div><div class="font-bold text-xs truncate">${s.name}</div><div>${st}</div></div>`;
-            });
-        }
-        
-        async function saveAtt(sid, cid, date, status) {
-            await saveAndRefresh({action:'addAttendance', studentId:sid, classId:cid, date:date, status:status});
-        }
-
         function renderIncomingSubmissions() {
             const div = document.getElementById('incoming-list'); if(!div) return; div.innerHTML='';
             const pend = dataState.submissions.filter(s => !dataState.scores.some(x => x.taskId==s.taskId && x.studentId==s.studentId));
-            if(!pend.length) { div.innerHTML='<div class="text-center text-white/30">ไม่มีงานใหม่</div>'; return; }
+            if(!pend.length) { div.innerHTML='<div class="text-center text-slate-400 py-10">ไม่มีงานใหม่</div>'; return; }
             pend.forEach(sub => {
                 const t = dataState.tasks.find(x=>x.id==sub.taskId); const s = dataState.students.find(x=>x.id==sub.studentId);
                 if(t && s) {
-                    div.innerHTML += `<div class="bg-white/5 p-3 rounded-xl border border-white/10 text-sm">
-                        <div class="flex justify-between">
-                            <div><div class="font-bold text-yellow-400">${s.name}</div><div class="text-xs">${t.name}</div></div>
-                            <a href="${sub.link}" target="_blank" class="text-blue-400"><i class="fa-solid fa-link"></i></a>
+                    div.innerHTML += `<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 text-sm flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <div><div class="font-bold text-blue-600">${s.name}</div><div class="text-xs text-slate-500">${t.name}</div></div>
+                            <a href="${sub.link}" target="_blank" class="text-blue-500 bg-blue-50 px-2 py-1 rounded hover:bg-blue-100"><i class="fa-solid fa-link"></i></a>
                         </div>
-                        <div class="flex gap-2 mt-2"><input id="g-${sub.taskId}-${sub.studentId}" type="number" class="w-16 glass-input rounded text-center"><button onclick="quickGrade('${sub.studentId}','${sub.taskId}')" class="btn-blue px-3 rounded text-xs">ให้คะแนน</button></div>
+                        ${sub.comment ? `<div class="text-xs text-slate-500 bg-slate-50 p-2 rounded border-l-2 border-slate-300">"${sub.comment}"</div>` : ''}
+                        <div class="flex gap-2 mt-1"><input id="g-${sub.taskId}-${sub.studentId}" type="number" class="w-16 glass-input rounded text-center" placeholder="Max ${t.maxScore}"><button onclick="quickGrade('${sub.studentId}','${sub.taskId}')" class="btn-primary px-3 rounded text-xs">ให้คะแนน</button><button onclick="returnWork('${sub.studentId}','${sub.taskId}')" class="btn-warning px-3 rounded text-xs">ส่งคืน</button></div>
                     </div>`;
                 }
             });
         }
         
-        window.quickGrade = (sid, tid) => {
-            const val = document.getElementById(`g-${tid}-${sid}`).value;
-            if(val) saveAndRefresh({action:'addScore', studentId:sid, taskId:tid, score:val});
-        }
+        // --- Standard Helpers (Date, Grade, Toast, Print) ---
+        function getThaiDateISO(){ const d=new Date(); return new Date(d.getTime()+(7*60*60000)).toISOString().split('T')[0]; }
+        function formatThaiDate(d){ if(!d)return'-'; try{ return new Date(d).toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'}); }catch{return d;} }
+        function calGrade(s){ s=Number(s)||0; if(s>=80)return 4; if(s>=75)return 3.5; if(s>=70)return 3; if(s>=65)return 2.5; if(s>=60)return 2; if(s>=55)return 1.5; if(s>=50)return 1; return 0; }
+        function showToast(m,c){ const t=document.getElementById('toast-notification'); document.getElementById('toast-message').textContent=m; t.className=`fixed bottom-10 left-1/2 -translate-x-1/2 ${c||"bg-slate-800"} text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3 toast-show font-bold`; setTimeout(()=>t.classList.remove('toast-show'),3000); }
+        function printOfficialReport() { document.getElementById('print-area').style.display='block'; window.print(); document.getElementById('print-area').style.display='none'; }
+        function exportGradeCSV() { showToast("Downloading CSV..."); } function exportAttendanceCSV() { showToast("Downloading CSV..."); }
 
-        function renderStudentDashboard(s) {
-            document.getElementById('std-dash-name').textContent = s.name;
-            document.getElementById('std-dash-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name;
-            const container = document.getElementById('std-subjects-container'); container.innerHTML='';
-            const myTasks = dataState.tasks.filter(t=>t.classId==s.classId);
-            const subs = [...new Set(myTasks.map(t=>t.subjectId))];
-            
-            subs.forEach(subId => {
-                const subj = dataState.subjects.find(x=>x.id==subId); if(!subj) return;
-                const {total} = calculateScores(s.id, s.classId, myTasks.filter(t=>t.subjectId==subId));
-                let html = `<div class="glass-ios p-4 rounded-2xl relative overflow-hidden"><h3 class="font-bold text-white border-l-4 border-yellow-500 pl-2 mb-2">${subj.name} <span class="float-right text-sm bg-white/10 px-2 rounded">เกรด ${calGrade(total)}</span></h3>`;
-                html += `<div class="grid grid-cols-4 gap-2 mt-2">`;
-                myTasks.filter(t=>t.subjectId==subId).forEach(t => {
-                    const sc = dataState.scores.find(x=>x.studentId==s.id && x.taskId==t.id);
-                    const sub = dataState.submissions.find(x=>x.studentId==s.id && x.taskId==t.id);
-                    let st = sc ? `<span class="text-green-400 font-bold">${sc.score}</span>` : (sub ? '<i class="fa-solid fa-hourglass text-blue-400"></i>' : '<i class="fa-regular fa-circle text-white/20"></i>');
-                    html += `<div class="bg-white/5 p-2 rounded text-center border border-white/5" onclick="openSubmitModal('${t.id}','${s.id}','${t.name}')"><div class="text-[10px] truncate">${t.name}</div><div class="mt-1">${st}</div></div>`;
-                });
-                html += `</div></div>`;
-                container.innerHTML += html;
-            });
-            
-            const attBody = document.getElementById('std-att-body'); attBody.innerHTML='';
-            dataState.attendance.filter(a=>a.studentId==s.id).forEach(a=>{
-                attBody.innerHTML += `<tr><td class="px-4 py-2 text-white/70">${formatThaiDate(a.date)}</td><td class="px-4 py-2 text-center ${a.status=='มา'?'text-green-400':(a.status=='ขาด'?'text-red-400':'text-yellow-400')}">${a.status}</td></tr>`;
-            });
-        }
-        
-        // --- Core Helpers ---
+        // --- Event Handlers & Form Submits ---
         async function saveAndRefresh(payload) {
             try {
                 if(payload.action=='login') document.getElementById('login-spinner').classList.remove('hidden');
@@ -738,110 +789,55 @@
                 else showToast(j.message, "bg-red-600");
             } catch(e) { console.error(e); showToast("Error", "bg-red-600"); }
         }
+        async function saveAtt(sid, cid, date, status) { await saveAndRefresh({action:'addAttendance', studentId:sid, classId:cid, date:date, status:status}); }
+        window.quickGrade = (sid, tid) => { const val = document.getElementById(`g-${tid}-${sid}`).value; if(val) saveAndRefresh({action:'addScore', studentId:sid, taskId:tid, score:val}); }
+        window.returnWork = (sid, tid) => { const r = prompt("เหตุผลที่ส่งคืน:"); if(r) saveAndRefresh({action:'returnForRevision', studentId:sid, taskId:tid, comment:r}); }
+        window.openManualScore = (sid, tid) => { const s=dataState.students.find(x=>x.id==sid), t=dataState.tasks.find(x=>x.id==tid); if(s&&t){ pendingScore={s,t}; document.getElementById('score-modal').classList.remove('hidden'); document.getElementById('modal-student-name').textContent=s.name; document.getElementById('modal-task-name').textContent=t.name; document.getElementById('modal-max-score').textContent=t.maxScore; document.getElementById('modal-score-input').value=''; document.getElementById('modal-score-input').focus(); }};
+        function closeScoreModal() { document.getElementById('score-modal').classList.add('hidden'); document.getElementById('scan-score-input').focus(); }
 
-        function switchMainTab(t) {
-            document.getElementById('section-admin').classList.add('hidden'); document.getElementById('section-student').classList.add('hidden');
-            document.getElementById(`section-${t}`).classList.remove('hidden');
-            document.getElementById('tab-btn-admin').className = t=='admin' ? "px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-900 shadow-lg" : "px-6 py-2 rounded-full text-sm font-bold text-white/50";
-            document.getElementById('tab-btn-student').className = t=='student' ? "px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-900 shadow-lg" : "px-6 py-2 rounded-full text-sm font-bold text-white/50";
-        }
-        function switchAdminSubTab(t) {
-            document.querySelectorAll('.admin-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(`admin-panel-${t}`).classList.remove('hidden');
-            document.querySelectorAll('.menu-btn').forEach(b=>b.className="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold");
-            document.getElementById(`menu-${t}`).className="menu-btn btn-blue rounded-2xl py-3 font-bold shadow-lg text-white";
-            refreshUI();
-        }
+        // --- Config & UI Logic ---
+        function switchMainTab(t) { document.getElementById('section-admin').classList.add('hidden'); document.getElementById('section-student').classList.add('hidden'); document.getElementById(`section-${t}`).classList.remove('hidden'); document.querySelectorAll('nav button').forEach(b=>b.className='px-6 py-2 rounded-full text-sm font-bold text-slate-500'); document.getElementById(`tab-btn-${t}`).className='px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-600 shadow-md'; }
+        function switchAdminSubTab(t) { document.querySelectorAll('.admin-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(`admin-panel-${t}`).classList.remove('hidden'); document.querySelectorAll('.menu-btn').forEach(b=>{b.className="menu-btn glass-ios hover:bg-white text-slate-600 rounded-2xl py-3 font-bold";}); document.getElementById(`menu-${t}`).className="menu-btn btn-primary rounded-2xl py-3 font-bold shadow-lg text-white"; refreshUI(); }
         
-        // Helpers
-        function getThaiDateISO(){ const d=new Date(); return new Date(d.getTime()+(7*60*60000)).toISOString().split('T')[0]; }
-        function formatThaiDate(d){ if(!d)return'-'; try{ return new Date(d).toLocaleDateString('th-TH', {day:'numeric',month:'short',year:'numeric'}); }catch{return d;} }
-        function calGrade(s){ s=Number(s)||0; if(s>=80)return 4; if(s>=75)return 3.5; if(s>=70)return 3; if(s>=65)return 2.5; if(s>=60)return 2; if(s>=55)return 1.5; if(s>=50)return 1; return 0; }
-        function showToast(m,c){ const t=document.getElementById('toast-notification'); document.getElementById('toast-message').textContent=m; t.className=`fixed bottom-10 left-1/2 -translate-x-1/2 ${c||"bg-gradient-to-r from-green-600 to-teal-600"} text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3 toast-show`; setTimeout(()=>t.classList.remove('toast-show'),3000); }
-        
-        // --- Form Handlers ---
+        function renderScoreButtons() { document.getElementById('score-buttons-container').innerHTML = [1,2,3,4,5,6,7,8,9,10].map(i=>`<button class="btn-score w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-amber-100 font-bold transition-all" onclick="setScoreMode(${i})">${i}</button>`).join(''); }
+        function setScoreMode(m) { scoreMode=m; document.querySelectorAll('.btn-score').forEach(b=>b.classList.remove('score-btn-active')); if(m!='manual') event.target.classList.add('score-btn-active'); document.getElementById('scan-score-input').focus(); }
+        function checkSmartSchedule() { /* Logic */ }
+        function updateInboxBadge() { const c = dataState.submissions.filter(s=>!dataState.scores.some(x=>x.taskId==s.taskId && x.studentId==s.studentId)).length; const b=document.getElementById('badge-homework'); if(c){b.classList.remove('hidden');b.textContent=c;}else b.classList.add('hidden'); }
+
+        // Init Listeners
         function initEventListeners() {
             document.getElementById('admin-login-form').onsubmit = async(e) => { e.preventDefault(); const r = await saveAndRefresh({action:'login', username:document.getElementById('admin-username').value, password:document.getElementById('admin-password').value}); if(r && r.status=='success') { localStorage.setItem('wany_admin_session', r.token); showAdminPanel(); } };
             document.getElementById('form-subject').onsubmit = (e) => { e.preventDefault(); saveAndRefresh({action:'addSubject', id:Date.now(), name:document.getElementById('subject-name').value}); e.target.reset(); };
             document.getElementById('form-class').onsubmit = (e) => { e.preventDefault(); saveAndRefresh({action:'addClass', id:Date.now(), name:document.getElementById('class-name').value, subjectId:document.getElementById('class-subject-ref').value}); e.target.reset(); };
             document.getElementById('form-student').onsubmit = (e) => { e.preventDefault(); saveAndRefresh({action:'addStudent', id:Date.now(), classId:document.getElementById('student-class').value, no:document.getElementById('student-no').value, code:document.getElementById('student-id').value, name:document.getElementById('student-name').value}); e.target.reset(); };
             document.getElementById('form-task').onsubmit = (e) => { e.preventDefault(); const cbs = [...document.querySelectorAll('#task-class-checkboxes input:checked')].map(c=>c.value); const chaps = [...document.querySelectorAll('.chapter-checkbox:checked')].map(c=>c.value); saveAndRefresh({action:'addTask', id:Date.now(), classIds:cbs, subjectId:document.getElementById('task-subject-filter').value, category:document.getElementById('task-category').value, chapter:chaps, name:document.getElementById('task-name').value, maxScore:document.getElementById('task-max').value, dueDateISO:getThaiDateISO()}); e.target.reset(); };
-            document.getElementById('form-schedule').onsubmit = (e) => { e.preventDefault(); saveAndRefresh({action:'addSchedule', id:Date.now(), day:document.getElementById('sch-day').value, period:document.getElementById('sch-period').value, classId:document.getElementById('sch-class').value}); };
             document.getElementById('form-material').onsubmit = (e) => { e.preventDefault(); saveAndRefresh({action:'addMaterial', id:Date.now(), subjectId:document.getElementById('mat-subject').value, title:document.getElementById('mat-title').value, link:document.getElementById('mat-link').value}); e.target.reset(); };
             document.getElementById('btn-modal-save').onclick = () => { if(pendingScore){ saveAndRefresh({action:'addScore', studentId:pendingScore.s.id, taskId:pendingScore.t.id, score:document.getElementById('modal-score-input').value}); closeScoreModal(); }};
-            
-            // Dropdown updates
+            // Dropdowns
             document.getElementById('scan-class-select').onchange = () => { updateScanTaskDropdown(); renderScoreRoster(); };
             document.getElementById('scan-task-select').onchange = renderScoreRoster;
             document.getElementById('report-subject').onchange = () => { const sid=document.getElementById('report-subject').value; const el=document.getElementById('report-class'); el.innerHTML='<option value="">เลือกห้อง</option>'; dataState.classes.filter(c=>c.subjectId==sid).forEach(c=>{el.innerHTML+=`<option value="${c.id}">${c.name}</option>`}); };
             document.getElementById('report-class').onchange = renderGradeReport;
             document.getElementById('att-class-select').onchange = renderAttRoster;
             document.getElementById('att-date-input').onchange = renderAttRoster;
-            
-            // Form Submit Work
-            document.getElementById('form-submit-work').onsubmit = (e) => { e.preventDefault(); 
-                const sid=document.getElementById('submit-student-id').value; const tid=document.getElementById('submit-task-id').value;
-                const friends = [...document.querySelectorAll('.friend-checkbox:checked')].map(c=>c.value); friends.push(sid);
-                saveAndRefresh({action:'submitTask', taskId:tid, studentIds:friends, link:document.getElementById('submit-link-input').value, comment:document.getElementById('submit-comment-input').value});
-                document.getElementById('submit-modal').classList.add('hidden');
-            };
+            document.getElementById('form-submit-work').onsubmit = (e) => { e.preventDefault(); const sid=document.getElementById('submit-student-id').value; const tid=document.getElementById('submit-task-id').value; const friends = [...document.querySelectorAll('.friend-checkbox:checked')].map(c=>c.value); friends.push(sid); saveAndRefresh({action:'submitTask', taskId:tid, studentIds:friends, link:document.getElementById('submit-link-input').value, comment:document.getElementById('submit-comment-input').value}); document.getElementById('submit-modal').classList.add('hidden'); };
         }
-        
-        // Condensed Render Helpers
-        function refreshDropdowns() {
-             const fill = (id, list) => { const el=document.getElementById(id); if(!el)return; const v=el.value; el.innerHTML='<option value="">เลือก</option>'; list.forEach(x=>el.innerHTML+=`<option value="${x.id}">${x.name}</option>`); if(v)el.value=v; };
-             fill('class-subject-ref', dataState.subjects); fill('student-class', dataState.classes); fill('scan-class-select', dataState.classes); fill('task-subject-filter', dataState.subjects); fill('sch-class', dataState.classes); fill('mat-subject', dataState.subjects); fill('report-subject', dataState.subjects); fill('att-class-select', dataState.classes);
-        }
-        function updateScanTaskDropdown() {
-             const cid=document.getElementById('scan-class-select').value; const el=document.getElementById('scan-task-select'); el.innerHTML='<option value="">เลือกงาน</option>';
-             dataState.tasks.filter(t=>t.classId==cid).forEach(t=>el.innerHTML+=`<option value="${t.id}">${t.name} (${t.maxScore})</option>`);
-        }
-        function renderTaskClassCheckboxes() {
-             const sid=document.getElementById('task-subject-filter').value; const div=document.getElementById('task-class-checkboxes'); div.innerHTML='';
-             dataState.classes.filter(c=>c.subjectId==sid).forEach(c=>div.innerHTML+=`<label class="flex items-center gap-2 text-xs text-white"><input type="checkbox" value="${c.id}" class="accent-yellow-500"> ${c.name}</label>`);
-        }
-        function renderScheduleList() { document.getElementById('schedule-list').innerHTML = dataState.schedules.map(s=>`<div class="bg-white/5 p-2 rounded text-xs text-white">วัน${s.day} คาบ${s.period} : ห้อง ${dataState.classes.find(c=>c.id==s.classId)?.name}</div>`).join(''); }
-        function renderSubjectList() { document.getElementById('subject-list-container').innerHTML = dataState.subjects.map(s=>`<div class="text-sm text-white/70 border-b border-white/5 py-1 flex justify-between"><span>${s.name}</span><i class="fa-solid fa-gear cursor-pointer" onclick="openSubjectConfig('${s.id}')"></i></div>`).join(''); }
-        function renderAdminMaterials() { document.getElementById('admin-mat-list').innerHTML = dataState.materials.map(m=>`<div class="bg-white/5 p-2 rounded text-xs text-white flex justify-between"><span>${m.title}</span><a href="${m.link}" target="_blank" class="text-blue-400">Open</a></div>`).join(''); }
-        function checkSmartSchedule() { /* Logic simplified for brevity */ }
-        function renderScoreButtons() { document.getElementById('score-buttons-container').innerHTML = [1,2,3,4,5,6,7,8,9,10].map(i=>`<button class="btn-score w-8 h-8 rounded bg-white/10 text-white hover:bg-yellow-500" onclick="setScoreMode(${i})">${i}</button>`).join(''); }
-        function setScoreMode(m) { scoreMode=m; document.querySelectorAll('.btn-score').forEach(b=>b.classList.remove('bg-yellow-500')); if(m!='manual') event.target.classList.add('bg-yellow-500'); document.getElementById('scan-score-input').focus(); }
-        function setAttMode(m) { attMode=m; document.getElementById('att-scan-input').focus(); }
-        function closeScoreModal() { document.getElementById('score-modal').classList.add('hidden'); document.getElementById('scan-score-input').focus(); }
-        function updateInboxBadge() { const c = dataState.submissions.filter(s=>!dataState.scores.some(x=>x.taskId==s.taskId && x.studentId==s.studentId)).length; const b=document.getElementById('badge-homework'); if(c){b.classList.remove('hidden');b.textContent=c;}else b.classList.add('hidden'); }
-        
-        // Subject Config (Full)
-        function openSubjectConfig(sid) {
-             const s=dataState.subjects.find(x=>x.id==sid); if(!s)return;
-             document.getElementById('config-subject-id').value=sid; document.getElementById('config-subject-name').textContent=s.name;
-             currentConfig = s.scoreConfig ? [...s.scoreConfig] : [10,10,10,10,10]; renderConfigSlots();
-             document.getElementById('subject-config-modal').classList.remove('hidden');
-        }
-        function renderConfigSlots() {
-             const div=document.getElementById('config-slots-container'); div.innerHTML=''; let tot=0;
-             currentConfig.forEach((v,i)=>{ tot+=Number(v); div.innerHTML+=`<div class="flex gap-2 items-center"><span class="text-white w-8">CH${i+1}</span><input type="number" value="${v}" onchange="currentConfig[${i}]=this.value; renderConfigSlots()" class="glass-input w-16 text-center rounded"><i class="fa-solid fa-trash text-red-400 cursor-pointer" onclick="currentConfig.splice(${i},1);renderConfigSlots()"></i></div>`; });
-             document.getElementById('config-total-score').textContent=tot;
-        }
+        function refreshDropdowns() { const fill = (id, list) => { const el=document.getElementById(id); if(!el)return; const v=el.value; el.innerHTML='<option value="">เลือก</option>'; list.forEach(x=>el.innerHTML+=`<option value="${x.id}">${x.name}</option>`); if(v)el.value=v; }; fill('class-subject-ref', dataState.subjects); fill('student-class', dataState.classes); fill('scan-class-select', dataState.classes); fill('task-subject-filter', dataState.subjects); fill('sch-class', dataState.classes); fill('mat-subject', dataState.subjects); fill('report-subject', dataState.subjects); fill('att-class-select', dataState.classes); }
+        function updateScanTaskDropdown() { const cid=document.getElementById('scan-class-select').value; const el=document.getElementById('scan-task-select'); el.innerHTML='<option value="">เลือกงาน</option>'; dataState.tasks.filter(t=>t.classId==cid).forEach(t=>el.innerHTML+=`<option value="${t.id}">${t.name} (${t.maxScore})</option>`); }
+        function renderTaskClassCheckboxes() { const sid=document.getElementById('task-subject-filter').value; const div=document.getElementById('task-class-checkboxes'); div.innerHTML=''; dataState.classes.filter(c=>c.subjectId==sid).forEach(c=>div.innerHTML+=`<label class="flex items-center gap-2 text-xs text-slate-700 font-bold"><input type="checkbox" value="${c.id}" class="accent-blue-500 w-4 h-4"> ${c.name}</label>`); }
+        function renderScheduleList() { document.getElementById('schedule-list').innerHTML = dataState.schedules.map(s=>`<div class="bg-white p-2 rounded text-xs text-slate-600 shadow-sm border border-slate-100">วัน${s.day} คาบ${s.period} : ${dataState.classes.find(c=>c.id==s.classId)?.name}</div>`).join(''); }
+        function renderSubjectList() { document.getElementById('subject-list-container').innerHTML = dataState.subjects.map(s=>`<div class="text-sm text-slate-600 border-b border-slate-100 py-1 flex justify-between"><span>${s.name}</span><i class="fa-solid fa-gear cursor-pointer hover:text-blue-500" onclick="openSubjectConfig('${s.id}')"></i></div>`).join(''); }
+        // Config
+        function openSubjectConfig(sid) { const s=dataState.subjects.find(x=>x.id==sid); if(!s)return; document.getElementById('config-subject-id').value=sid; document.getElementById('config-subject-name').textContent=s.name; currentConfig = s.scoreConfig ? [...s.scoreConfig] : [10,10,10,10,10]; renderConfigSlots(); document.getElementById('subject-config-modal').classList.remove('hidden'); }
+        function renderConfigSlots() { const div=document.getElementById('config-slots-container'); div.innerHTML=''; let tot=0; currentConfig.forEach((v,i)=>{ tot+=Number(v); div.innerHTML+=`<div class="flex gap-2 items-center"><span class="text-slate-500 w-8 text-xs font-bold">CH${i+1}</span><input type="number" value="${v}" onchange="currentConfig[${i}]=this.value; renderConfigSlots()" class="glass-input w-16 text-center rounded text-sm"><i class="fa-solid fa-trash text-red-400 cursor-pointer hover:text-red-600" onclick="currentConfig.splice(${i},1);renderConfigSlots()"></i></div>`; }); document.getElementById('config-total-score').textContent=tot; }
         function addConfigSlot() { if(currentConfig.length<10) { currentConfig.push(10); renderConfigSlots(); } }
-        function saveSubjectConfig() {
-             const sid=document.getElementById('config-subject-id').value;
-             saveAndRefresh({action:'updateSubjectConfig', id:sid, config:currentConfig});
-             document.getElementById('subject-config-modal').classList.add('hidden');
-        }
-        
-        // Student Login
-        function handleStudentLogin() {
-            const code = document.getElementById('student-login-id').value;
-            const s = dataState.students.find(x=>x.code==code);
-            if(s) { localStorage.setItem('current_student_code', code); document.getElementById('student-login-wrapper').classList.add('hidden'); document.getElementById('student-dashboard').classList.remove('hidden'); renderStudentDashboard(s); }
-            else showToast("ไม่พบข้อมูล", "bg-red-600");
-        }
-        function openSubmitModal(tid, sid, tname) {
-             document.getElementById('submit-modal').classList.remove('hidden');
-             document.getElementById('submit-task-id').value=tid; document.getElementById('submit-student-id').value=sid; document.getElementById('submit-modal-title').textContent=tname;
-             const fList = document.getElementById('friend-selector-container'); fList.innerHTML='';
-             const s=dataState.students.find(x=>x.id==sid);
-             dataState.students.filter(x=>x.classId==s.classId && x.id!=sid).forEach(f=>{ fList.innerHTML+=`<label class="flex items-center gap-2 text-white text-xs p-1"><input type="checkbox" value="${f.id}" class="friend-checkbox accent-blue-500"> ${f.name}</label>`; });
-        }
+        function saveSubjectConfig() { const sid=document.getElementById('config-subject-id').value; saveAndRefresh({action:'updateSubjectConfig', id:sid, config:currentConfig}); document.getElementById('subject-config-modal').classList.add('hidden'); }
+        function handleStudentLogin() { const code = document.getElementById('student-login-id').value; const s = dataState.students.find(x=>x.code==code); if(s) { localStorage.setItem('current_student_code', code); document.getElementById('student-login-wrapper').classList.add('hidden'); document.getElementById('student-dashboard').classList.remove('hidden'); renderStudentDashboard(s); } else showToast("ไม่พบข้อมูล", "bg-red-600"); }
+        function openSubmitModal(tid, sid, tname) { document.getElementById('submit-modal').classList.remove('hidden'); document.getElementById('submit-task-id').value=tid; document.getElementById('submit-student-id').value=sid; document.getElementById('submit-modal-title').textContent=tname; const fList = document.getElementById('friend-selector-container'); fList.innerHTML=''; const s=dataState.students.find(x=>x.id==sid); dataState.students.filter(x=>x.classId==s.classId && x.id!=sid).forEach(f=>{ fList.innerHTML+=`<label class="flex items-center gap-2 text-slate-700 text-xs p-1 bg-slate-50 rounded mb-1 border border-slate-100"><input type="checkbox" value="${f.id}" class="friend-checkbox accent-blue-500"> ${f.name}</label>`; }); }
+        // Individual Search logic
+        let searchDebounceTimer;
+        window.searchIndividual = (term) => { clearTimeout(searchDebounceTimer); searchDebounceTimer = setTimeout(() => { const div = document.getElementById('individual-search-results'); if(!div) return; div.innerHTML = ''; if(term.length < 2) { div.classList.add('hidden'); return; } const matches = dataState.students.filter(s => (s.name && s.name.includes(term)) || (s.code && String(s.code).includes(term))); if(matches.length === 0) div.innerHTML = '<div class="p-3 text-slate-400 text-sm">ไม่พบข้อมูล</div>'; else matches.slice(0,10).forEach(s => { const el = document.createElement('div'); el.className = "p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 text-sm text-slate-600"; el.innerHTML = `<span class="text-blue-600 font-bold">${s.name}</span> <span class="text-xs">(${dataState.classes.find(c=>c.id==s.classId)?.name})</span>`; el.onclick = () => { document.getElementById('individual-search').value = s.name; div.classList.add('hidden'); showIndividualProfile(s.id); }; div.appendChild(el); }); div.classList.remove('hidden'); }, 300); };
+        function showIndividualProfile(sid) { const s = dataState.students.find(x => x.id == sid); if(!s) return; const container = document.getElementById('individual-result-container'); container.classList.remove('hidden'); document.getElementById('ind-name').textContent = s.name; document.getElementById('ind-id').textContent = s.code; document.getElementById('ind-class').textContent = dataState.classes.find(c => c.id == s.classId)?.name; const atts = dataState.attendance.filter(a => a.studentId == sid); let p=0, l=0, a=0, aDates=[]; atts.forEach(x => { if(x.status=='มา')p++; else if(x.status=='ลา')l++; else if(x.status=='ขาด') { a++; aDates.push(formatThaiDate(x.date)); }}); document.getElementById('ind-att-present').textContent=p; document.getElementById('ind-att-leave').textContent=l; document.getElementById('ind-att-absent').textContent=a; document.getElementById('ind-absent-dates').innerHTML = aDates.length ? aDates.join(', ') : '-'; const tasks = dataState.tasks.filter(t => t.classId == s.classId); const mList = document.getElementById('ind-missing-list'); mList.innerHTML=''; let done=0; tasks.forEach(t => { if(dataState.scores.some(x=>x.studentId==sid && x.taskId==t.id) || dataState.submissions.some(x=>x.studentId==sid && x.taskId==t.id)) done++; else mList.innerHTML += `<div class="text-xs text-red-500 border-b border-slate-100 py-1 flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i> ${t.name}</div>`; }); const prog = tasks.length ? Math.round((done/tasks.length)*100) : 0; document.getElementById('ind-work-bar').style.width = `${prog}%`; document.getElementById('ind-work-progress-text').textContent = `${prog}%`; document.getElementById('ind-gpa').textContent = calGrade(calculateScores(sid, s.classId, tasks).total); }
     </script>
 </body>
 </html>
