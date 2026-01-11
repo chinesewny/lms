@@ -1059,53 +1059,141 @@
     };
 
     function renderStudentDashboard(s) {
-        // --- ส่วนที่เพิ่ม: อัปเดตชื่อและห้องที่หัวเว็บ ---
+        // --- ส่วนที่แก้ไข 1: บังคับกรอกอีเมลถ้าข้อมูลว่าง ---
+        if (!s.email || s.email === "") {
+            openEmailModal('student');
+        }
+        // ----------------------------------------------
+
+        // --- ส่วนที่แก้ไข 2: แสดงชื่อและห้องที่หัวเว็บ ---
         document.getElementById('std-dash-name').textContent = s.name;
         const clsName = dataState.classes.find(c => c.id == s.classId)?.name || '-';
         document.getElementById('std-dash-class').textContent = clsName;
-        // ----------------------------------------
+        // ----------------------------------------------
 
-        const container = document.getElementById('std-subjects-container'); container.innerHTML = '';
+        const container = document.getElementById('std-subjects-container'); 
+        container.innerHTML = '';
+        
         const myTasks = dataState.tasks.filter(t => t.classId == s.classId);
         const subjectsFound = [...new Set(myTasks.map(t => t.subjectId))];
         const today = getThaiDateISO();
         
+        if (subjectsFound.length === 0) {
+            container.innerHTML = '<div class="text-center text-white/50 py-10">ยังไม่มีรายวิชาที่ลงทะเบียน</div>';
+            return;
+        }
+
         subjectsFound.forEach(subId => {
             const subj = dataState.subjects.find(sub => sub.id == subId) || {name:'-', scoreConfig:[]};
             const subjectTasks = myTasks.filter(t => t.subjectId == subId);
             const { midterm, final, total } = calculateScores(s.id, s.classId, subjectTasks); 
             const grade = calGrade(total);
             const atts = dataState.attendance.filter(a => a.studentId == s.id);
+            
             let p=0, l=0, a=0, act=0;
-            atts.forEach(att => { if(att.status == 'มา') p++; else if(att.status == 'ลา') l++; else if(att.status == 'ขาด') a++; else if(att.status == 'กิจกรรม') act++; });
+            atts.forEach(att => { 
+                if(att.status == 'มา') p++; 
+                else if(att.status == 'ลา') l++; 
+                else if(att.status == 'ขาด') a++; 
+                else if(att.status == 'กิจกรรม') act++; 
+            });
 
+            // ส่วนแสดงคะแนนกลางภาค
             let midDisplay = `<span class="text-white/20 font-bold">-</span>`; 
             const midTask = subjectTasks.find(t => t.category === 'midterm');
             if (midTask) {
                 const hasScore = dataState.scores.some(sc => sc.studentId == s.id && sc.taskId == midTask.id);
-                if (hasScore) { midDisplay = `<span class="text-blue-300 font-bold">${midterm}</span>`; if (midterm < 13) { midDisplay = `<span class="text-orange-400 font-bold text-xs"><i class="fa-solid fa-triangle-exclamation"></i> ต้องแก้ไข (ไม่ผ่านเกณฑ์)</span>`; } }
+                if (hasScore) { 
+                    midDisplay = `<span class="text-blue-300 font-bold">${midterm}</span>`; 
+                    if (midterm < (midTask.maxScore / 2)) { 
+                        midDisplay = `<span class="text-orange-400 font-bold text-xs"><i class="fa-solid fa-triangle-exclamation"></i> ต้องแก้ไข (ไม่ผ่านเกณฑ์)</span>`; 
+                    } 
+                }
             }
+
+            // ส่วนแสดงคะแนนปลายภาค
             let finalDisplay = `<span class="text-white/20 font-bold">-</span>`; 
             const finalTask = subjectTasks.find(t => t.category === 'final');
             if (finalTask) {
                 const hasScore = dataState.scores.some(sc => sc.studentId == s.id && sc.taskId == finalTask.id);
-                if (hasScore) { if (Number(final) > 0) { finalDisplay = `<i class="fa-solid fa-check text-green-400 text-xl"></i>`; } else { finalDisplay = `<span class="text-red-400 text-xs"><i class="fa-solid fa-xmark"></i> ขาดสอบ</span>`; } }
+                if (hasScore) { 
+                    if (Number(final) > 0) { 
+                        finalDisplay = `<i class="fa-solid fa-check text-green-400 text-xl"></i>`; 
+                    } else { 
+                        finalDisplay = `<span class="text-red-400 text-xs"><i class="fa-solid fa-xmark"></i> ขาดสอบ</span>`; 
+                    } 
+                }
             }
 
+            // คำนวณความคืบหน้า
             let completedCount = 0;
-            subjectTasks.forEach(t => { const hasScore = dataState.scores.some(sc => sc.studentId == s.id && sc.taskId == t.id); const hasSub = dataState.submissions.some(sb => sb.studentId == s.id && sb.taskId == t.id); if(hasScore || hasSub) completedCount++; });
+            subjectTasks.forEach(t => { 
+                const hasScore = dataState.scores.some(sc => sc.studentId == s.id && sc.taskId == t.id); 
+                const hasSub = dataState.submissions.some(sb => sb.studentId == s.id && sb.taskId == t.id); 
+                if(hasScore || hasSub) completedCount++; 
+            });
             let progress = subjectTasks.length > 0 ? Math.round((completedCount/subjectTasks.length)*100) : 0;
 
+            // สร้าง Card วิชา
             const card = document.createElement('div');
             card.className = "flex flex-col gap-6 p-5 bg-gradient-to-r from-blue-900/40 to-blue-600/20 rounded-2xl border border-blue-500/30 mb-6";
-            let html = `<div class="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4"><div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-2xl shadow-lg">📚</div><div><h2 class="text-xl font-bold text-white tracking-wide">${subj.name}</h2><p class="text-blue-300 text-sm font-mono mt-1">เกรดเฉลี่ย: <span class="text-yellow-400 font-bold text-lg">${grade}</span></p></div></div><div class="flex gap-4 bg-black/20 p-3 rounded-xl"><div class="text-center px-4 border-r border-white/10"><div class="text-[10px] text-white/50 uppercase">กลางภาค</div><div class="mt-1">${midDisplay}</div></div><div class="text-center px-4"><div class="text-[10px] text-white/50 uppercase">ปลายภาค</div><div class="mt-1">${finalDisplay}</div></div></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="glass-ios p-5 rounded-2xl border border-white/10 relative overflow-hidden"><div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div><h3 class="text-sm font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-user-clock mr-2 text-green-400"></i>ประวัติการเข้าเรียน</h3><div class="grid grid-cols-4 gap-2 text-center mb-4"><div class="bg-green-500/10 border border-green-500/30 rounded-xl p-2"><div class="text-xl font-bold text-green-400">${p}</div><div class="text-[9px] text-white/50 uppercase">มา</div></div><div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-2"><div class="text-xl font-bold text-yellow-400">${l}</div><div class="text-[9px] text-white/50 uppercase">ลา</div></div><div class="bg-red-500/10 border border-red-500/30 rounded-xl p-2"><div class="text-xl font-bold text-red-400">${a}</div><div class="text-[9px] text-white/50 uppercase">ขาด</div></div><div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-2"><div class="text-xl font-bold text-orange-400">${act}</div><div class="text-[9px] text-white/50 uppercase">กิจกรรม</div></div></div></div><div class="glass-ios p-5 rounded-2xl border border-white/10 relative overflow-hidden"><div class="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div><h3 class="text-sm font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-list-check mr-2 text-yellow-400"></i>สถานะการส่งงาน</h3><div class="mb-4"><div class="flex justify-between text-xs text-white/70 mb-1"><span>ความคืบหน้า</span><span class="text-white font-bold">${progress}%</span></div><div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden"><div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div></div></div><div class="space-y-2 max-h-60 overflow-y-auto pr-1">`;
+            
+            let html = `
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-white/10 pb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-2xl shadow-lg">📚</div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-wide">${subj.name}</h2>
+                        <p class="text-blue-300 text-sm font-mono mt-1">เกรดเฉลี่ย: <span class="text-yellow-400 font-bold text-lg">${grade}</span></p>
+                    </div>
+                </div>
+                <div class="flex gap-4 bg-black/20 p-3 rounded-xl">
+                    <div class="text-center px-4 border-r border-white/10">
+                        <div class="text-[10px] text-white/50 uppercase">กลางภาค</div>
+                        <div class="mt-1">${midDisplay}</div>
+                    </div>
+                    <div class="text-center px-4">
+                        <div class="text-[10px] text-white/50 uppercase">ปลายภาค</div>
+                        <div class="mt-1">${finalDisplay}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-ios p-5 rounded-2xl border border-white/10 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
+                    <h3 class="text-sm font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-user-clock mr-2 text-green-400"></i>ประวัติการเข้าเรียน</h3>
+                    <div class="grid grid-cols-4 gap-2 text-center mb-4">
+                        <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-2"><div class="text-xl font-bold text-green-400">${p}</div><div class="text-[9px] text-white/50 uppercase">มา</div></div>
+                        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-2"><div class="text-xl font-bold text-yellow-400">${l}</div><div class="text-[9px] text-white/50 uppercase">ลา</div></div>
+                        <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-2"><div class="text-xl font-bold text-red-400">${a}</div><div class="text-[9px] text-white/50 uppercase">ขาด</div></div>
+                        <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-2"><div class="text-xl font-bold text-orange-400">${act}</div><div class="text-[9px] text-white/50 uppercase">กิจกรรม</div></div>
+                    </div>
+                </div>
 
+                <div class="glass-ios p-5 rounded-2xl border border-white/10 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
+                    <h3 class="text-sm font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-list-check mr-2 text-yellow-400"></i>สถานะการส่งงาน</h3>
+                    <div class="mb-4">
+                        <div class="flex justify-between text-xs text-white/70 mb-1"><span>ความคืบหน้า</span><span class="text-white font-bold">${progress}%</span></div>
+                        <div class="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+                            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 h-2.5 rounded-full transition-all duration-1000" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">`;
+
+            // เรียงลำดับงาน: งานตีกลับ > งานค้างส่ง > ยังไม่ส่ง > รอตรวจ > ตรวจแล้ว
             const getPriority = (t) => {
                 const sc = dataState.scores.find(x => x.studentId == s.id && x.taskId == t.id);
                 const sub = dataState.submissions.find(x => x.studentId == s.id && x.taskId == t.id);
                 const ret = dataState.returns ? dataState.returns.find(x => x.studentId == s.id && x.taskId == t.id) : null;
                 const isLate = t.dueDateISO < today;
-                if (ret) return 1; if (!sc && !sub && isLate) return 2; if (!sc && !sub) return 3; if (sub && !sc) return 4; return 5;
+                
+                if (ret) return 1;          // โดนตีกลับ (สำคัญสุด)
+                if (!sc && !sub && isLate) return 2; // เลยกำหนดส่ง
+                if (!sc && !sub) return 3;  // ยังไม่ส่ง (ปกติ)
+                if (sub && !sc) return 4;   // รอตรวจ
+                return 5;                   // ตรวจแล้ว
             };
             const sortedTasks = [...subjectTasks].sort((a,b) => getPriority(a) - getPriority(b));
 
@@ -1113,20 +1201,48 @@
                 const sc = dataState.scores.find(x => x.studentId == s.id && x.taskId == t.id);
                 const submission = dataState.submissions.find(x => x.studentId == s.id && x.taskId == t.id);
                 const returned = dataState.returns ? dataState.returns.find(x => x.studentId == s.id && x.taskId == t.id) : null;
+                
                 let bgClass = "bg-white/5 border-white/10";
                 let statusBadge = `<span class="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/50">รอส่ง</span>`;
                 let actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-white/10 hover:bg-white/20 text-white px-2 py-1 rounded border border-white/20">ส่งงาน</button>`;
 
-                if (returned) { bgClass = "bg-orange-500/10 border-orange-500/30"; statusBadge = `<span class="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded font-bold">ต้องแก้ไข</span>`; actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 rounded shadow">แก้ใหม่</button>`; } 
-                else if (sc) { bgClass = "bg-green-500/10 border-green-500/30"; statusBadge = `<span class="text-[10px] text-green-400 font-bold"><i class="fa-solid fa-check mr-1"></i>ตรวจแล้ว</span>`; actionBtn = ``; } 
-                else if (submission) { bgClass = "bg-blue-500/10 border-blue-500/30"; statusBadge = `<span class="text-[10px] text-blue-300"><i class="fa-solid fa-hourglass-half mr-1"></i>รอตรวจ</span>`; actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-blue-600/30 hover:bg-blue-600/50 text-white px-2 py-1 rounded">แก้ไข</button>`; } 
-                else if (t.dueDateISO < today) { bgClass = "bg-red-500/10 border-red-500/30"; statusBadge = `<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold">ค้างส่ง</span>`; actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded shadow">ส่ง(ช้า)</button>`; }
+                if (returned) { 
+                    bgClass = "bg-orange-500/10 border-orange-500/30"; 
+                    statusBadge = `<span class="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded font-bold">ต้องแก้ไข</span>`; 
+                    actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-orange-600 hover:bg-orange-500 text-white px-2 py-1 rounded shadow">แก้ใหม่</button>`; 
+                } 
+                else if (sc) { 
+                    bgClass = "bg-green-500/10 border-green-500/30"; 
+                    statusBadge = `<span class="text-[10px] text-green-400 font-bold"><i class="fa-solid fa-check mr-1"></i>ตรวจแล้ว</span>`; 
+                    actionBtn = ``; 
+                } 
+                else if (submission) { 
+                    bgClass = "bg-blue-500/10 border-blue-500/30"; 
+                    statusBadge = `<span class="text-[10px] text-blue-300"><i class="fa-solid fa-hourglass-half mr-1"></i>รอตรวจ</span>`; 
+                    actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-blue-600/30 hover:bg-blue-600/50 text-white px-2 py-1 rounded">แก้ไข</button>`; 
+                } 
+                else if (t.dueDateISO < today) { 
+                    bgClass = "bg-red-500/10 border-red-500/30"; 
+                    statusBadge = `<span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold">ค้างส่ง</span>`; 
+                    actionBtn = `<button onclick="openSubmitModal('${t.id}', '${s.id}', '${t.name}')" class="text-[10px] bg-red-700 hover:bg-red-600 text-white px-2 py-1 rounded shadow">ส่ง(ช้า)</button>`; 
+                }
 
-                html += `<div class="flex items-center justify-between p-2 rounded-lg border ${bgClass}"><div class="flex-1 min-w-0 mr-2"><div class="text-xs font-bold text-white truncate">${t.name}</div><div class="mt-1">${statusBadge}</div></div>${actionBtn}</div>`;
+                html += `<div class="flex items-center justify-between p-2 rounded-lg border ${bgClass}">
+                            <div class="flex-1 min-w-0 mr-2">
+                                <div class="text-xs font-bold text-white truncate">${t.name}</div>
+                                <div class="mt-1">${statusBadge}</div>
+                            </div>
+                            ${actionBtn}
+                        </div>`;
             });
-            html += `</div></div></div>`; card.innerHTML = html; container.appendChild(card);
+            
+            html += `</div></div></div></div>`; // ปิด div ของ Task List และ Grid และ Card
+            
+            card.innerHTML = html; 
+            container.appendChild(card);
         });
     }
+
     function initEventListeners() {
         document.getElementById('friend-search').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
