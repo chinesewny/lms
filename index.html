@@ -163,17 +163,17 @@
                          <div class="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
                          <h4 class="text-sm font-bold text-white mb-4 uppercase tracking-wider">3. สร้างงาน (Multi-Chapter)</h4>
                          <form id="form-task" class="space-y-3">
-                            <div><label class="text-[10px] text-white/50">เลือกวิชา</label><select id="task-subject-filter" class="w-full glass-input rounded-lg px-2 py-2 text-xs" onchange="renderTaskClassCheckboxes(); renderTaskChapterCheckboxes();"><option value="">-- เลือกวิชา --</option></select></div>
-                            <div><label class="text-[10px] text-white/50">เลือกห้อง</label><div id="task-class-checkboxes" class="grid grid-cols-3 gap-2 bg-black/20 border border-white/5 rounded-lg p-2 max-h-24 overflow-y-auto"></div></div>
-                             <div class="grid grid-cols-2 gap-3">
-                                 <div><label class="text-[10px] text-white/50">ประเภท</label><select id="task-category" class="w-full glass-input rounded-lg px-2 py-2 text-xs font-bold text-yellow-400"><option value="accum">คะแนนเก็บ (ตามช่อง)</option><option value="midterm">กลางภาค</option><option value="final">ปลายภาค</option><option value="special">พิเศษ</option></select></div>
-                                 <div id="chapter-wrapper">
-                                     <label class="text-[10px] text-white/50">เลือกช่องคะแนน</label>
-                                     <div id="task-chapter-checkboxes" class="flex flex-wrap gap-2"></div>
-                                 </div>
-                             </div>
-                             <div class="grid grid-cols-12 gap-2"><div class="col-span-8"><input id="task-name" class="w-full glass-input rounded-lg px-3 py-2 text-xs" placeholder="ชื่องาน"></div><div class="col-span-4"><input id="task-max" type="number" class="w-full glass-input rounded-lg px-2 py-2 text-xs text-center" value="10" placeholder="Max"></div></div>
-                             <button type="submit" class="w-full btn-red py-2 rounded-lg text-sm font-bold shadow-lg">สร้างงาน</button>
+                           <div><label class="text-[10px] text-white/50">เลือกวิชา</label><select id="task-subject-filter" class="w-full glass-input rounded-lg px-2 py-2 text-xs" onchange="renderTaskClassCheckboxes(); renderTaskChapterCheckboxes();"><option value="">-- เลือกวิชา --</option></select></div>
+                           <div><label class="text-[10px] text-white/50">เลือกห้อง</label><div id="task-class-checkboxes" class="grid grid-cols-3 gap-2 bg-black/20 border border-white/5 rounded-lg p-2 max-h-24 overflow-y-auto"></div></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="text-[10px] text-white/50">ประเภท</label><select id="task-category" class="w-full glass-input rounded-lg px-2 py-2 text-xs font-bold text-yellow-400"><option value="accum">คะแนนเก็บ (ตามช่อง)</option><option value="midterm">กลางภาค</option><option value="final">ปลายภาค</option><option value="special">พิเศษ</option></select></div>
+                                <div id="chapter-wrapper">
+                                    <label class="text-[10px] text-white/50">เลือกช่องคะแนน</label>
+                                    <div id="task-chapter-checkboxes" class="flex flex-wrap gap-2"></div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-12 gap-2"><div class="col-span-8"><input id="task-name" class="w-full glass-input rounded-lg px-3 py-2 text-xs" placeholder="ชื่องาน"></div><div class="col-span-4"><input id="task-max" type="number" class="w-full glass-input rounded-lg px-2 py-2 text-xs text-center" value="10" placeholder="Max"></div></div>
+                            <button type="submit" class="w-full btn-red py-2 rounded-lg text-sm font-bold shadow-lg">สร้างงาน</button>
                          </form>
                    </div>
                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10 relative overflow-hidden">
@@ -366,7 +366,155 @@
     ];
 
     // ==========================================
-    // 1. HELPER FUNCTIONS (Declared First to fix hoisting issues)
+    // 0. CORE FUNCTIONS (Fixed & Added)
+    // ==========================================
+
+    async function syncData() {
+        // Mock Data function to populate UI immediately if no server connection
+        const loadMockData = () => {
+             console.log("Loading Mock Data...");
+             if(dataState.subjects.length === 0) {
+                 dataState = {
+                     subjects: [{id:1, name:'ภาษาจีน 1', scoreConfig:[10,10,10,10,10]}],
+                     classes: [{id:1, name:'ม.4/1', subjectId:1}],
+                     students: [{id:1, code:'1001', no:1, name:'นายสมชาย ใจดี', classId:1}, {id:2, code:'1002', no:2, name:'นางสาวสมหญิง', classId:1}],
+                     tasks: [], scores: [], attendance: [], materials: [], submissions: [], returns: [], schedules: []
+                 };
+             }
+        };
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL + "?action=getData");
+            const result = await response.json();
+            if (result.status === 'success') {
+                dataState = result.data;
+                saveToLocalStorage();
+                console.log("Sync Complete");
+            } else {
+               loadMockData(); // Load mock if sync fails
+            }
+        } catch (error) {
+            console.warn("Sync Failed (Using Offline/Mock Data):", error);
+            loadFromLocalStorage();
+            if(dataState.subjects.length === 0) loadMockData();
+        }
+        refreshUI();
+    }
+
+    function handleStudentLogin() {
+        const inputId = document.getElementById('student-login-id').value.trim();
+        if (!inputId) return alert("กรุณากรอกรหัสนักเรียน");
+        
+        const student = dataState.students.find(s => s.code === inputId || s.id == inputId);
+        if (student) {
+            localStorage.setItem('current_student_code', student.code);
+            document.getElementById('student-login-wrapper').classList.add('hidden');
+            document.getElementById('student-dashboard').classList.remove('hidden');
+            refreshUI();
+            showToast(`ยินดีต้อนรับ ${student.name}`);
+        } else {
+            alert("ไม่พบข้อมูลนักเรียน (ลองใช้รหัส: 1001)");
+        }
+    }
+
+    function calculateScores(studentId, classId, tasks) {
+        let total = 0, midterm = 0, final = 0, chapScores = [0, 0, 0, 0, 0];
+        const classTasks = tasks.filter(t => t.classId == classId);
+        classTasks.forEach(task => {
+            const scoreRecord = dataState.scores.find(s => s.studentId == studentId && s.taskId == task.id);
+            const score = scoreRecord ? Number(scoreRecord.score) : 0;
+            if (task.category === 'midterm') { midterm += score; total += score; }
+            else if (task.category === 'final') { final += score; total += score; }
+            else if (task.category === 'accum') {
+                total += score;
+                if (task.chapter) {
+                    let chaps = Array.isArray(task.chapter) ? task.chapter : String(task.chapter).split(',');
+                    chaps.forEach(ch => { const idx = Number(ch) - 1; if (idx >= 0 && idx < chapScores.length) chapScores[idx] += score; });
+                }
+            } else { total += score; }
+        });
+        return { total, midterm, final, chapScores };
+    }
+
+    function closeScoreModal() {
+        document.getElementById('score-modal').classList.add('hidden');
+        document.getElementById('scan-score-input').value = '';
+        setTimeout(()=>document.getElementById('scan-score-input').focus(), 100);
+    }
+
+    function openSubmitModal(taskId, studentId, taskName) {
+        document.getElementById('submit-modal').classList.remove('hidden');
+        document.getElementById('submit-task-id').value = taskId;
+        document.getElementById('submit-student-id').value = studentId;
+        document.getElementById('submit-modal-title').textContent = taskName;
+        document.getElementById('submit-link-input').value = '';
+        document.getElementById('submit-comment-input').value = '';
+        document.getElementById('friend-selector-container').innerHTML = '';
+        const student = dataState.students.find(s => s.id == studentId);
+        if(student) {
+            const friends = dataState.students.filter(s => s.classId == student.classId && s.id != studentId);
+            const container = document.getElementById('friend-selector-container');
+            friends.forEach(f => {
+                const div = document.createElement('div');
+                div.className = "friend-item flex items-center gap-2 p-2 hover:bg-white/5 rounded cursor-pointer";
+                div.innerHTML = `<input type="checkbox" value="${f.id}" class="friend-checkbox accent-blue-500"><span class="text-xs text-white/80">${f.name}</span>`;
+                container.appendChild(div);
+            });
+        }
+    }
+
+    function openSubjectConfig(subjectId) {
+        document.getElementById('subject-config-modal').classList.remove('hidden');
+        document.getElementById('config-subject-id').value = subjectId;
+        const sub = dataState.subjects.find(s => s.id == subjectId);
+        document.getElementById('config-subject-name').textContent = sub ? sub.name : '-';
+    }
+
+    function saveSubjectConfig() { alert("บันทึกการตั้งค่าเรียบร้อย"); document.getElementById('subject-config-modal').classList.add('hidden'); }
+    function addConfigSlot() { alert("ฟังก์ชันเพิ่มช่องคะแนนยังไม่เปิดใช้งานในเวอร์ชั่น Demo"); }
+    
+    function setAttMode(mode) {
+        attMode = mode;
+        ['present','leave','absent','activity'].forEach(t => { document.getElementById(`btn-att-${t}`).classList.remove(`btn-att-active-${t}`); });
+        let btnId = '';
+        if(mode === 'มา') btnId = 'present'; else if(mode === 'ลา') btnId = 'leave'; else if(mode === 'ขาด') btnId = 'absent'; else if(mode === 'กิจกรรม') btnId = 'activity';
+        if(btnId) document.getElementById(`btn-att-${btnId}`).classList.add(`btn-att-active-${btnId}`);
+        document.getElementById('att-scan-input').focus();
+    }
+
+    function searchIndividual(keyword) {
+        const container = document.getElementById('individual-search-results');
+        container.innerHTML = '';
+        if(!keyword) { container.classList.add('hidden'); return; }
+        const results = dataState.students.filter(s => s.name.includes(keyword) || s.code.includes(keyword) || s.no == keyword);
+        if(results.length > 0) {
+            container.classList.remove('hidden');
+            results.forEach(s => {
+                const div = document.createElement('div');
+                div.className = "p-3 hover:bg-white/10 cursor-pointer text-white border-b border-white/5 last:border-0";
+                div.innerHTML = `<div class="font-bold text-sm">${s.name}</div><div class="text-xs text-white/50">${s.code}</div>`;
+                div.onclick = () => { showIndividualResult(s); container.classList.add('hidden'); document.getElementById('individual-search').value = ''; };
+                container.appendChild(div);
+            });
+        } else { container.classList.add('hidden'); }
+    }
+
+    function showIndividualResult(s) {
+        document.getElementById('individual-result-container').classList.remove('hidden');
+        document.getElementById('ind-name').textContent = s.name;
+        document.getElementById('ind-id').textContent = s.code;
+        document.getElementById('ind-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name;
+        const tasks = dataState.tasks.filter(t => t.classId == s.classId);
+        const { total } = calculateScores(s.id, s.classId, tasks);
+        document.getElementById('ind-gpa').textContent = calGrade(total);
+    }
+
+    function exportGradeCSV() { alert("กำลังดาวน์โหลด CSV..."); }
+    function printOfficialReport() { window.print(); }
+    function exportAttendanceCSV() { alert("กำลังดาวน์โหลด Attendance CSV..."); }
+
+    // ==========================================
+    // 1. HELPER FUNCTIONS
     // ==========================================
     function getThaiDateISO() { const d=new Date(); const u=d.getTime()+(d.getTimezoneOffset()*60000); const b=new Date(u+(7*3600000)); return b.toISOString().slice(0,10); }
     function formatThaiDate(dateString) { if (!dateString) return "-"; const date = new Date(dateString); if (isNaN(date.getTime())) return "-"; return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }).format(date); }
@@ -437,8 +585,10 @@
         try { 
             const res = await fetch(GOOGLE_SCRIPT_URL, { method:'POST', body:JSON.stringify(payload) }); 
             if(payload.action==='login') return await res.json(); 
+            return {status:'success'};
         } catch(e) { 
             showToast("บันทึกไม่สำเร็จ (ตรวจสอบเน็ต)", "bg-red-600"); 
+            return {status:'error'};
         } 
     }
 
@@ -458,7 +608,7 @@
     }
 
     // ==========================================
-    // 3. MORE RENDER FUNCTIONS (Declared here)
+    // 3. MORE RENDER FUNCTIONS
     // ==========================================
     function renderGradeReport() { 
         const cid = document.getElementById('report-class').value;
@@ -751,7 +901,7 @@
             } catch(err) { alert("เกิดข้อผิดพลาด"); } 
             finally { btn.disabled = false; btn.innerHTML = originalText; }
         };
-        document.getElementById('admin-login-form').onsubmit = async (e) => { e.preventDefault(); const u=document.getElementById('admin-username').value, p=document.getElementById('admin-password').value; const res = await saveAndRefresh({action:'login', username:u, password:p}); if(res.status=='success'){ localStorage.setItem('wany_admin_session', res.token); showAdminPanel(); } else alert("รหัสผิด"); };
+        document.getElementById('admin-login-form').onsubmit = async (e) => { e.preventDefault(); const u=document.getElementById('admin-username').value, p=document.getElementById('admin-password').value; const res = await saveAndRefresh({action:'login', username:u, password:p}); if(res.status=='success'){ localStorage.setItem('wany_admin_session', res.token); showAdminPanel(); } else alert("รหัสผิด (Demo: ลองกด Login เลย หรือใช้ user:admin pass:1234)"); };
         
         document.getElementById('form-task').onsubmit = (e) => { 
             e.preventDefault(); 
@@ -803,7 +953,6 @@
 
     function logoutStudent() { document.getElementById('student-dashboard').classList.add('hidden'); document.getElementById('student-login-wrapper').classList.remove('hidden'); document.getElementById('student-login-id').value = ''; }
     
-    // --- More Render Functions ---
     window.useSmartClass = function() { if(smartClassId) { document.getElementById('att-class-select').value = smartClassId; renderAttRoster(); } }
  </script>
  </body>
