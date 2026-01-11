@@ -66,7 +66,9 @@
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         thead { display: table-header-group; } 
         tr { page-break-inside: avoid; page-break-after: auto; }
-        th, td { border: 1px solid #000; padding: 6px; text-align: center; color: black; }
+        /* แก้ไขเพิ่มเส้นตารางให้ชัดเจนตอนพิมพ์ */
+        table, th, td { border: 1px solid black !important; }
+        th, td { padding: 6px; text-align: center; color: black; }
         .print-header-row td { border: none !important; padding-bottom: 10px; }
         .column-header th { background-color: #e5e7eb !important; color: black !important; font-weight: bold; border: 1px solid #000; }
       }
@@ -115,7 +117,7 @@
             <div class="flex justify-between items-center glass-ios px-4 py-3 rounded-2xl">
                 <div class="flex items-center gap-3">
                     <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-lg text-white font-bold shadow-lg ring-2 ring-white/20"><i class="fa-solid fa-user-tie"></i></div>
-                    <div><h3 class="text-sm font-bold text-white">ผู้ดูแลระบบ <button onclick="openEmailModal('admin')" class="text-yellow-400 hover:text-white ml-2" title="แก้ไขอีเมล"><i class="fa-solid fa-envelope"></i></button></h3><p class="text-[10px] text-green-400 font-bold"><i class="fa-solid fa-circle text-[8px] mr-1"></i>Online</p></div>
+                    <div><h3 class="text-sm font-bold text-white">ผู้ดูแลระบบ <button onclick="openEmailModal('admin')" class="text-yellow-400 hover:text-white ml-2" title="แก้ไขอีเมล"><i class="fa-solid fa-envelope"></i></button></h3><p class="text-[10px] text-green-400 font-bold"><i class="fa-solid fa-wifi mr-1"></i><span>Online</span></p></div>
                 </div>
                 <button onclick="handleLogout(true)" class="bg-white/10 hover:bg-red-500/80 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all border border-white/10"><i class="fa-solid fa-power-off mr-2"></i>ออก</button>
             </div>
@@ -201,7 +203,7 @@
                          <div><label class="text-xs text-white/50 block mb-2">3. สแกน/พิมพ์รหัส</label><input id="scan-score-input" type="text" class="w-full glass-input rounded-xl px-4 py-3 text-lg text-center font-bold focus:border-yellow-500 outline-none placeholder-white/20" placeholder="Scan here..."></div>
                      </div>
                      <div class="lg:col-span-3 bg-black/20 p-5 rounded-2xl border border-white/10 flex flex-col">
-                         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-white/80">📋 รายชื่อนักเรียน</h3><span class="text-xs text-green-400 animate-pulse"><i class="fa-solid fa-wifi"></i> Syncing</span></div>
+                         <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-white/80">📋 รายชื่อนักเรียน</h3><span class="text-xs text-green-400 animate-pulse"><i class="fa-solid fa-wifi"></i> Syncing (Auto 5s)</span></div>
                          <div id="score-roster-grid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 overflow-y-auto max-h-[600px] p-1"></div>
                      </div>
                  </div>
@@ -223,16 +225,26 @@
                                     <p class="text-blue-300 text-sm font-mono mt-1"><span id="ind-id" class="bg-black/30 px-2 py-0.5 rounded mr-2"></span> <span id="ind-class"></span></p>
                                 </div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-xs text-white/50 uppercase tracking-wider">เกรดเฉลี่ย (ประมาณการ)</div>
-                                <div id="ind-gpa" class="text-4xl font-bold text-yellow-400 drop-shadow-md">-</div>
+                            <div class="flex gap-4 bg-black/20 p-3 rounded-2xl border border-white/5">
+                                <div class="text-center px-4 border-r border-white/10">
+                                    <div class="text-[10px] text-white/50 uppercase mb-1">กลางภาค</div>
+                                    <div id="ind-score-mid" class="text-xl font-bold text-blue-300">-</div>
+                                </div>
+                                <div class="text-center px-4 border-r border-white/10">
+                                    <div class="text-[10px] text-white/50 uppercase mb-1">ปลายภาค</div>
+                                    <div id="ind-score-final" class="text-xl font-bold text-purple-300">-</div>
+                                </div>
+                                <div class="text-center px-4">
+                                    <div class="text-[10px] text-yellow-500/70 uppercase mb-1">เกรดเฉลี่ย</div>
+                                    <div id="ind-gpa" class="text-2xl font-bold text-yellow-400 drop-shadow-sm">-</div>
+                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="glass-ios p-5 rounded-2xl border border-white/10 relative overflow-hidden">
                                 <div class="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                                 <h3 class="text-lg font-bold text-white mb-4 flex items-center"><i class="fa-solid fa-user-clock mr-2 text-green-400"></i>ประวัติการเข้าเรียน</h3>
-                                <div class="grid grid-cols-3 gap-3 text-center mb-4">
+                                <div class="grid grid-cols-4 gap-2 text-center mb-4">
                                     <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-3"><div id="ind-att-present" class="text-2xl font-bold text-green-400">0</div><div class="text-[10px] text-white/50 uppercase">มาเรียน</div></div>
                                     <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3"><div id="ind-att-leave" class="text-2xl font-bold text-yellow-400">0</div><div class="text-[10px] text-white/50 uppercase">ลา</div></div>
                                     <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-3"><div id="ind-att-absent" class="text-2xl font-bold text-red-400">0</div><div class="text-[10px] text-white/50 uppercase">ขาด</div></div>
@@ -348,7 +360,7 @@
 
  <script>
     // ***********************************************
-    // ⚠️ เปลี่ยน URL ด้านล่างให้เป็น URL ของ Google Apps Script ที่ Deploy ใหม่ของคุณ
+    // ⚠️ อย่าลืมเปลี่ยน URL ด้านล่างให้เป็น URL ของ Google Apps Script ที่ Deploy ใหม่ของคุณ
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQNjMSE06u5xO4dtyipa5P-YzoaicppubdwlUgMpaX4L4TUjk3-xY2PRnzhS42AxZe/exec"; 
     // ***********************************************
 
@@ -358,6 +370,7 @@
     let pendingScore = null;
     let smartClassId = null; 
     let currentConfig = [];
+    let tempConfig = []; // เพิ่มตัวแปรสำหรับตั้งค่าคะแนน
 
     const PERIODS = [
         { p: 1, start: "08:30", end: "09:20" }, { p: 2, start: "09:20", end: "10:10" }, { p: 3, start: "10:10", end: "11:00" },
@@ -365,15 +378,16 @@
         { p: 7, start: "13:30", end: "14:20" }, { p: 8, start: "14:20", end: "15:10" }
     ];
 
-    // ==========================================
-    // 0. CORE FUNCTIONS (Fixed & Added)
-    // ==========================================
-
     async function syncData() {
-        // Mock Data function to populate UI immediately if no server connection
+        const statusIcon = document.querySelector('.fa-wifi');
+        if(statusIcon) {
+            statusIcon.className = "fa-solid fa-spinner fa-spin text-yellow-400"; 
+            if(statusIcon.nextSibling) statusIcon.nextSibling.textContent = " Syncing...";
+        }
+
         const loadMockData = () => {
-             console.log("Loading Mock Data...");
              if(dataState.subjects.length === 0) {
+                 console.log("Using Mock Data");
                  dataState = {
                      subjects: [{id:1, name:'ภาษาจีน 1', scoreConfig:[10,10,10,10,10]}],
                      classes: [{id:1, name:'ม.4/1', subjectId:1}],
@@ -384,28 +398,38 @@
         };
 
         try {
-            const response = await fetch(GOOGLE_SCRIPT_URL + "?action=getData");
+            const response = await fetch(GOOGLE_SCRIPT_URL + "?action=getData&t=" + Date.now());
             const result = await response.json();
-            if (result.status === 'success') {
-                dataState = result.data;
+            if (result.status === 'success' || result.subjects) {
+                dataState = result.data || result;
                 saveToLocalStorage();
-                console.log("Sync Complete");
-            } else {
-               loadMockData(); // Load mock if sync fails
+                refreshUI();
+                
+                if(statusIcon) {
+                    statusIcon.className = "fa-solid fa-wifi";
+                    if(statusIcon.nextSibling) statusIcon.nextSibling.textContent = " Online";
+                    statusIcon.parentElement.className = "text-xs text-green-400 font-bold transition-all";
+                }
             }
         } catch (error) {
-            console.warn("Sync Failed (Using Offline/Mock Data):", error);
-            loadFromLocalStorage();
+            console.warn("Sync Failed (Offline/Error):", error);
+            if(dataState.subjects.length === 0) loadFromLocalStorage();
             if(dataState.subjects.length === 0) loadMockData();
+            refreshUI();
+            
+            if(statusIcon) {
+                statusIcon.className = "fa-solid fa-wifi";
+                if(statusIcon.nextSibling) statusIcon.nextSibling.textContent = " Offline";
+                statusIcon.parentElement.className = "text-xs text-red-400 font-bold animate-pulse";
+            }
         }
-        refreshUI();
     }
 
     function handleStudentLogin() {
         const inputId = document.getElementById('student-login-id').value.trim();
         if (!inputId) return alert("กรุณากรอกรหัสนักเรียน");
         
-        const student = dataState.students.find(s => s.code === inputId || s.id == inputId);
+        const student = dataState.students.find(s => String(s.code) === String(inputId) || String(s.id) === String(inputId));
         if (student) {
             localStorage.setItem('current_student_code', student.code);
             document.getElementById('student-login-wrapper').classList.add('hidden');
@@ -413,7 +437,7 @@
             refreshUI();
             showToast(`ยินดีต้อนรับ ${student.name}`);
         } else {
-            alert("ไม่พบข้อมูลนักเรียน (ลองใช้รหัส: 1001)");
+            alert("ไม่พบข้อมูลนักเรียน");
         }
     }
 
@@ -463,15 +487,60 @@
         }
     }
 
+    // --- แก้ไข: ฟังก์ชันตั้งค่าคะแนน ---
     function openSubjectConfig(subjectId) {
         document.getElementById('subject-config-modal').classList.remove('hidden');
         document.getElementById('config-subject-id').value = subjectId;
         const sub = dataState.subjects.find(s => s.id == subjectId);
         document.getElementById('config-subject-name').textContent = sub ? sub.name : '-';
+        
+        // โหลด config ปัจจุบัน
+        tempConfig = (sub && sub.scoreConfig && sub.scoreConfig.length > 0) ? [...sub.scoreConfig] : [10,10,10,10,10];
+        renderConfigSlots();
     }
 
-    function saveSubjectConfig() { alert("บันทึกการตั้งค่าเรียบร้อย"); document.getElementById('subject-config-modal').classList.add('hidden'); }
-    function addConfigSlot() { alert("ฟังก์ชันเพิ่มช่องคะแนนยังไม่เปิดใช้งานในเวอร์ชั่น Demo"); }
+    function renderConfigSlots() {
+        const container = document.getElementById('config-slots-container');
+        container.innerHTML = '';
+        let total = 0;
+
+        tempConfig.forEach((score, idx) => {
+            total += Number(score);
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2 mb-2";
+            div.innerHTML = `
+                <span class="text-white text-xs w-8">CH.${idx+1}</span>
+                <input type="number" value="${score}" onchange="updateTempConfig(${idx}, this.value)" class="flex-1 glass-input rounded px-2 py-1 text-center text-sm">
+                <button onclick="removeConfigSlot(${idx})" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('config-total-score').textContent = total;
+    }
+
+    window.updateTempConfig = function(idx, val) {
+        tempConfig[idx] = Number(val);
+        renderConfigSlots();
+    }
+
+    window.removeConfigSlot = function(idx) {
+        tempConfig.splice(idx, 1);
+        renderConfigSlots();
+    }
+
+    function addConfigSlot() {
+        tempConfig.push(10);
+        renderConfigSlots();
+    }
+
+    function saveSubjectConfig() {
+        const subId = document.getElementById('config-subject-id').value;
+        saveAndRefresh({ action: 'updateSubjectConfig', id: subId, config: tempConfig });
+        document.getElementById('subject-config-modal').classList.add('hidden');
+        showToast("บันทึกโครงสร้างคะแนนแล้ว");
+    }
+    // ------------------------------------
     
     function setAttMode(mode) {
         attMode = mode;
@@ -486,7 +555,7 @@
         const container = document.getElementById('individual-search-results');
         container.innerHTML = '';
         if(!keyword) { container.classList.add('hidden'); return; }
-        const results = dataState.students.filter(s => s.name.includes(keyword) || s.code.includes(keyword) || s.no == keyword);
+        const results = dataState.students.filter(s => s.name.includes(keyword) || String(s.code).includes(keyword) || String(s.no) == keyword);
         if(results.length > 0) {
             container.classList.remove('hidden');
             results.forEach(s => {
@@ -501,37 +570,212 @@
 
     function showIndividualResult(s) {
         document.getElementById('individual-result-container').classList.remove('hidden');
+        
+        // 1. Basic Info
         document.getElementById('ind-name').textContent = s.name;
         document.getElementById('ind-id').textContent = s.code;
-        document.getElementById('ind-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name;
+        document.getElementById('ind-class').textContent = dataState.classes.find(c=>c.id==s.classId)?.name || '-';
+
+        // 2. Scores & GPA
         const tasks = dataState.tasks.filter(t => t.classId == s.classId);
-        const { total } = calculateScores(s.id, s.classId, tasks);
+        const { total, midterm, final } = calculateScores(s.id, s.classId, tasks);
         document.getElementById('ind-gpa').textContent = calGrade(total);
+        document.getElementById('ind-score-mid').textContent = midterm || '-';
+        document.getElementById('ind-score-final').textContent = final || '-';
+
+        // 3. Attendance Stats
+        const atts = dataState.attendance.filter(a => a.studentId == s.id);
+        let p=0, l=0, a=0, act=0, aDates=[];
+        atts.forEach(att => {
+            if(att.status === 'มา') p++;
+            else if(att.status === 'ลา') l++;
+            else if(att.status === 'ขาด') { a++; aDates.push(formatThaiDate(att.date)); }
+            else if(att.status === 'กิจกรรม') act++;
+        });
+
+        document.getElementById('ind-att-present').textContent = p;
+        document.getElementById('ind-att-leave').textContent = l;
+        document.getElementById('ind-att-absent').textContent = a;
+        document.getElementById('ind-att-activity').textContent = act;
+        
+        const absentDiv = document.getElementById('ind-absent-dates');
+        absentDiv.innerHTML = aDates.length > 0 ? aDates.map(d => `<span class="inline-block bg-red-500/20 text-red-200 px-1.5 py-0.5 rounded text-[10px] mr-1 mb-1">${d}</span>`).join('') : '<span class="text-green-400/60 text-xs">ไม่มีประวัติการขาดเรียน</span>';
+
+        // 4. Tasks & Progress
+        const allTasks = tasks;
+        const submittedIds = [];
+        // Check scores
+        dataState.scores.forEach(sc => { if(sc.studentId == s.id) submittedIds.push(sc.taskId); });
+        // Check submissions (pending)
+        dataState.submissions.forEach(sub => { if(sub.studentId == s.id) submittedIds.push(sub.taskId); });
+        
+        const uniqueSubmitted = [...new Set(submittedIds)];
+        const totalCount = allTasks.length;
+        const doneCount = uniqueSubmitted.filter(id => allTasks.find(t => t.id == id)).length;
+        const percent = totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100);
+
+        document.getElementById('ind-work-progress-text').textContent = `${percent}%`;
+        document.getElementById('ind-work-bar').style.width = `${percent}%`;
+
+        // Missing List
+        const missingListDiv = document.getElementById('ind-missing-list');
+        missingListDiv.innerHTML = '';
+        const missingTasks = allTasks.filter(t => !uniqueSubmitted.includes(t.id));
+        
+        if (missingTasks.length > 0) {
+            missingTasks.forEach(t => {
+                const el = document.createElement('div');
+                el.className = "bg-white/5 p-2 rounded border-l-2 border-red-400 flex items-center justify-between";
+                el.innerHTML = `<span class="text-xs text-white/80 truncate">${t.name}</span><span class="text-[10px] text-red-400">ยังไม่ส่ง</span>`;
+                missingListDiv.appendChild(el);
+            });
+        } else {
+            missingListDiv.innerHTML = `<div class="text-center py-2 text-green-400 text-xs"><i class="fa-solid fa-check-circle mr-1"></i>ส่งงานครบแล้ว</div>`;
+        }
     }
 
-    function exportGradeCSV() { alert("กำลังดาวน์โหลด CSV..."); }
-    function printOfficialReport() { window.print(); }
-    function exportAttendanceCSV() { alert("กำลังดาวน์โหลด Attendance CSV..."); }
+    function exportGradeCSV() {
+        const classId = document.getElementById('report-class').value;
+        if (!classId) return alert("กรุณาเลือกห้องเรียนก่อนดาวน์โหลด CSV");
+        const currentClass = dataState.classes.find(c => c.id == classId);
+        const students = dataState.students.filter(s => s.classId == classId).sort((a, b) => Number(a.no) - Number(b.no));
+        const tasks = dataState.tasks.filter(t => t.classId == classId);
+        
+        let csvContent = "\uFEFF"; 
+        let headerRow = ["เลขที่", "รหัสนักเรียน", "ชื่อ-นามสกุล"];
+        tasks.forEach(t => { headerRow.push(`"${t.name} (Max ${t.maxScore})"`); });
+        headerRow.push("คะแนนรวม", "เกรด");
+        csvContent += headerRow.join(",") + "\n";
+        
+        students.forEach(s => {
+            let row = [s.no, `"${s.code}"`, `"${s.name}"`];
+            tasks.forEach(t => {
+                const scoreRec = dataState.scores.find(sc => sc.studentId == s.id && sc.taskId == t.id);
+                row.push(scoreRec ? scoreRec.score : 0);
+            });
+            const { total } = calculateScores(s.id, classId, tasks);
+            const grade = calGrade(total);
+            row.push(total, grade);
+            csvContent += row.join(",") + "\n";
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Grade_${currentClass.name}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    // --- แก้ไข: ฟังก์ชันพิมพ์ PDF ---
+    function printOfficialReport() {
+        const cid = document.getElementById('report-class').value;
+        if (!cid) return alert("กรุณาเลือกห้องเรียนที่จะพิมพ์");
 
-    // ==========================================
-    // 1. HELPER FUNCTIONS
-    // ==========================================
+        const cls = dataState.classes.find(c => c.id == cid);
+        const subId = document.getElementById('report-subject').value;
+        const subj = dataState.subjects.find(s => s.id == subId);
+
+        // 1. ตั้งค่าหัวกระดาษ
+        document.getElementById('print-subtitle').textContent = `วิชา ${subj.name} | ห้อง ${cls.name} | วันที่พิมพ์: ${formatThaiDate(new Date().toISOString())}`;
+
+        // 2. สร้าง Header ตาราง
+        const thead = document.getElementById('print-column-header');
+        const tbody = document.getElementById('print-table-body');
+        tbody.innerHTML = ''; 
+        thead.innerHTML = '';
+
+        const config = (subj && subj.scoreConfig && subj.scoreConfig.length > 0) ? subj.scoreConfig : Array(5).fill(10);
+        
+        // สร้าง Header Columns
+        let hHTML = `<th style="width:5%;">#</th><th style="width:25%; text-align:left;">ชื่อ-นามสกุล</th>`;
+        config.forEach((m, i) => hHTML += `<th style="text-align:center;">CH${i+1}<br><span style="font-size:10px;">(${m})</span></th>`);
+        hHTML += `<th style="text-align:center;">กลาง</th><th style="text-align:center;">ปลาย</th><th style="text-align:center;">รวม</th><th style="text-align:center;">เกรด</th>`;
+        thead.innerHTML = hHTML;
+
+        // 3. สร้าง Rows ข้อมูล
+        const tasks = dataState.tasks.filter(t => t.classId == cid);
+        dataState.students.filter(s => s.classId == cid).sort((a,b)=>Number(a.no)-Number(b.no)).forEach((s, idx) => { 
+            const { chapScores, midterm, final, total } = calculateScores(s.id, cid, tasks);
+            const grade = calGrade(total);
+            
+            const tr = document.createElement('tr');
+            let html = `<td style="text-align:center;">${s.no||idx+1}</td><td style="padding-left:5px;">${s.name}</td>`;
+            chapScores.forEach(score => html += `<td style="text-align:center;">${score}</td>`);
+            html += `<td style="text-align:center;">${midterm}</td><td style="text-align:center;">${final}</td><td style="text-align:center; font-weight:bold;">${total}</td><td style="text-align:center; font-weight:bold;">${grade}</td>`;
+            
+            tr.innerHTML = html; 
+            tbody.appendChild(tr); 
+        });
+
+        window.print();
+    }
+    
+    // --- แก้ไข: ฟังก์ชัน Export Attendance CSV ---
+    function exportAttendanceCSV() {
+        const cid = document.getElementById('att-class-select').value;
+        if (!cid) return alert("กรุณาเลือกห้องเรียนก่อน");
+
+        const currentClass = dataState.classes.find(c => c.id == cid);
+        const students = dataState.students.filter(s => s.classId == cid).sort((a, b) => Number(a.no) - Number(b.no));
+        
+        // หา Date ทั้งหมดที่มีการเช็คชื่อ
+        const uniqueDates = [...new Set(dataState.attendance.filter(a => a.classId == cid).map(a => a.date))].sort();
+
+        let csvContent = "\uFEFF"; 
+        let headerRow = ["เลขที่", "รหัสนักเรียน", "ชื่อ-นามสกุล"];
+        
+        uniqueDates.forEach(d => headerRow.push(`"${formatThaiDate(d)}"`));
+        headerRow.push("มา", "ลา", "ขาด", "กิจกรรม", "เปอร์เซ็นต์การมา");
+        
+        csvContent += headerRow.join(",") + "\n";
+
+        students.forEach(s => {
+            let row = [s.no, `"${s.code}"`, `"${s.name}"`];
+            let p=0, l=0, a=0, act=0;
+
+            uniqueDates.forEach(d => {
+                const log = dataState.attendance.find(att => att.studentId == s.id && att.date == d);
+                const status = log ? log.status : "-";
+                row.push(status);
+                if(status=='มา') p++;
+                else if(status=='ลา') l++;
+                else if(status=='ขาด') a++;
+                else if(status=='กิจกรรม') act++;
+            });
+
+            const totalDays = uniqueDates.length || 1;
+            const percent = Math.round(((p+act)/totalDays)*100);
+
+            row.push(p, l, a, act, `${percent}%`);
+            csvContent += row.join(",") + "\n";
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Attendance_${currentClass.name}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
     function getThaiDateISO() { const d=new Date(); const u=d.getTime()+(d.getTimezoneOffset()*60000); const b=new Date(u+(7*3600000)); return b.toISOString().slice(0,10); }
     function formatThaiDate(dateString) { if (!dateString) return "-"; const date = new Date(dateString); if (isNaN(date.getTime())) return "-"; return new Intl.DateTimeFormat('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }).format(date); }
     function calGrade(s) { if(s>=80)return 4; if(s>=75)return 3.5; if(s>=70)return 3; if(s>=65)return 2.5; if(s>=60)return 2; if(s>=55)return 1.5; if(s>=50)return 1; return 0; }
     function showToast(m,c){ const t=document.getElementById('toast-notification'); document.getElementById('toast-message').textContent=m; t.className=`fixed bottom-10 left-1/2 -translate-x-1/2 bg-gradient-to-r from-green-600 to-teal-600 text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3 translate-y-20 opacity-0 font-bold border border-green-400/50 toast-show`; setTimeout(()=>t.classList.remove('toast-show'),3000); }
     function updateInboxBadge() { let count = 0; dataState.submissions.forEach(sub => { if(!dataState.scores.some(sc => sc.taskId == sub.taskId && sc.studentId == sub.studentId)) count++; }); const badge = document.getElementById('badge-homework'); count > 0 ? (badge.classList.remove('hidden'), badge.textContent = count > 99 ? '99+' : count) : badge.classList.add('hidden'); }
     
-    // --- Tabs & UI Switchers ---
     function switchMainTab(t) { document.getElementById('section-admin').classList.add('hidden'); document.getElementById('section-student').classList.add('hidden'); document.getElementById(`section-${t}`).classList.remove('hidden'); const btnA = document.getElementById('tab-btn-admin'), btnS = document.getElementById('tab-btn-student'); if(t=='admin'){ btnA.className="px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-900 shadow-lg transition-all"; btnS.className="px-6 py-2 rounded-full text-sm font-bold text-white/50 hover:text-white transition-all"; } else { btnS.className="px-6 py-2 rounded-full text-sm font-bold bg-white text-blue-900 shadow-lg transition-all"; btnA.className="px-6 py-2 rounded-full text-sm font-bold text-white/50 hover:text-white transition-all"; } }
     function switchAdminSubTab(t) { document.querySelectorAll('.admin-panel').forEach(p=>p.classList.add('hidden')); document.getElementById(`admin-panel-${t}`).classList.remove('hidden'); document.querySelectorAll('.menu-btn').forEach(b => { b.className="menu-btn glass-ios hover:bg-white/10 text-white/70 rounded-2xl py-3 font-bold"; }); const activeBtn = document.getElementById(`menu-${t}`); if(activeBtn) activeBtn.className="menu-btn btn-blue rounded-2xl py-3 font-bold shadow-lg text-white"; refreshUI(); }
     
-    // --- Dropdowns ---
     function refreshDropdowns() { const setOpts = (id, list) => { const el=document.getElementById(id); if(!el) return; const cur=el.value; el.innerHTML='<option value="">-- เลือก --</option>'; list.forEach(i=>{ const o=document.createElement('option'); o.value=i.id; o.textContent=i.name; el.appendChild(o); }); el.value=cur; }; setOpts('class-subject-ref', dataState.subjects); setOpts('student-class', dataState.classes); setOpts('scan-class-select', dataState.classes); setOpts('task-subject-filter', dataState.subjects); setOpts('att-class-select', dataState.classes); setOpts('mat-subject', dataState.subjects); setOpts('sch-class', dataState.classes); setOpts('report-subject', dataState.subjects); }
     function updateReportClassDropdown() { const subId = document.getElementById('report-subject').value; const classSelect = document.getElementById('report-class'); classSelect.innerHTML = '<option value="">-- เลือกห้อง --</option>'; document.getElementById('report-table-body').innerHTML = ''; if(!subId) return; const filteredClasses = dataState.classes.filter(c => c.subjectId == subId); filteredClasses.forEach(c => { const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; classSelect.appendChild(o); }); }
     function updateScanTaskDropdown() { const cid = document.getElementById('scan-class-select').value; const el = document.getElementById('scan-task-select'); const currentTaskId = el.value; el.innerHTML = '<option value="">-- เลือกงาน --</option>'; dataState.tasks.filter(t => t.classId == cid).reverse().forEach(t => { const o=document.createElement('option'); o.value=t.id; o.textContent=`${t.name} (Max ${t.maxScore})`; el.appendChild(o); }); if(currentTaskId) el.value = currentTaskId; }
 
-    // --- Render Components (Declared before usage) ---
     function renderTaskClassCheckboxes() { const subId = document.getElementById('task-subject-filter').value; const div = document.getElementById('task-class-checkboxes'); div.innerHTML=''; dataState.classes.filter(c=>c.subjectId==subId).forEach(c => { const lbl = document.createElement('label'); lbl.className="flex items-center gap-2 p-2 rounded hover:bg-white/10 cursor-pointer"; lbl.innerHTML=`<input type="checkbox" value="${c.id}" class="accent-yellow-500 w-4 h-4 rounded"><span class="text-xs text-white/80">${c.name}</span>`; div.appendChild(lbl); }); }
     function renderTaskChapterCheckboxes() { 
         const subId = document.getElementById('task-subject-filter').value; 
@@ -576,9 +820,6 @@
 
     function renderAdminMaterials() { const div = document.getElementById('admin-mat-list'); div.innerHTML = ''; dataState.materials.forEach(m => { const sub = dataState.subjects.find(s=>s.id == m.subjectId)?.name || '-'; const el = document.createElement('div'); el.className = "bg-white/5 p-3 rounded-xl border border-white/10 flex justify-between"; el.innerHTML = `<div><div class="text-xs text-yellow-400">${sub}</div><div class="font-bold text-sm text-white"><a href="${m.link}" target="_blank" class="hover:underline">${m.title}</a></div></div>`; div.appendChild(el); }); }
 
-    // ==========================================
-    // 2. CORE LOGIC FUNCTIONS
-    // ==========================================
     async function saveAndRefresh(payload) { 
         updateLocalState(payload); 
         refreshUI(); 
@@ -607,9 +848,6 @@
         if(p.action === 'submitTask') { p.studentIds.forEach(sid => { dataState.submissions = dataState.submissions.filter(s => !(s.studentId == sid && s.taskId == p.taskId)); if(dataState.returns) dataState.returns = dataState.returns.filter(r => !(r.studentId == sid && r.taskId == p.taskId)); dataState.submissions.push({taskId:p.taskId, studentId:sid, link:p.link, timestampISO: new Date().toISOString(), comment: p.comment}); }); }
     }
 
-    // ==========================================
-    // 3. MORE RENDER FUNCTIONS
-    // ==========================================
     function renderGradeReport() { 
         const cid = document.getElementById('report-class').value;
         const thead = document.getElementById('report-table-header');
@@ -687,9 +925,6 @@
     function renderScoreButtons() { const c = document.getElementById('score-buttons-container'); if(!c) return; c.innerHTML=''; [5,6,7,8,9,10].forEach(i => { const b = document.createElement('button'); b.textContent=i; b.className="btn-score py-2 rounded-lg border border-white/20 bg-white/5 text-white hover:bg-white/10"; b.onclick=()=>setScoreMode(i); c.appendChild(b); }); }
     function setScoreMode(m) { scoreMode = m; document.querySelectorAll('.btn-score').forEach(b => { b.classList.remove('btn-score-active'); if(b.textContent == m) b.classList.add('btn-score-active'); }); if(m=='manual') document.getElementById('btn-score-manual').classList.add('btn-score-active'); else document.getElementById('btn-score-manual').classList.remove('btn-score-active'); document.getElementById('scan-score-input').focus(); }
 
-    // ==========================================
-    // 4. MAIN INIT & LOGIC
-    // ==========================================
     window.addEventListener('DOMContentLoaded', () => {
         if(document.getElementById('att-date-input')) document.getElementById('att-date-input').value = getThaiDateISO();
         renderScoreButtons();
@@ -697,6 +932,9 @@
         loadFromLocalStorage();
         setupInactivityTimer();
         
+        refreshUI();
+        syncData(); 
+
         const adminSession = localStorage.getItem('wany_admin_session');
         const studentCode = localStorage.getItem('current_student_code');
 
@@ -707,21 +945,33 @@
             switchMainTab('student');
             document.getElementById('student-login-wrapper').classList.add('hidden');
             document.getElementById('student-dashboard').classList.remove('hidden');
-            syncData(); 
         } else {
             switchMainTab('student'); 
-            syncData();
         }
 
         setInterval(checkSmartSchedule, 60000);
-        setInterval(syncData, 60000);
+        setInterval(syncData, 5000); 
     });
 
     function setupInactivityTimer() {
         let time;
-        window.onload = resetTimer; document.onmousemove = resetTimer; document.onkeypress = resetTimer; document.ontouchstart = resetTimer; 
-        function logout() { alert("หมดเวลาการใช้งาน (30 นาที)"); localStorage.removeItem('wany_admin_session'); localStorage.removeItem('current_student_code'); location.reload(); }
-        function resetTimer() { clearTimeout(time); time = setTimeout(logout, 30 * 60 * 1000); }
+        window.onload = resetTimer; 
+        document.onmousemove = resetTimer; 
+        document.onkeypress = resetTimer; 
+        document.ontouchstart = resetTimer; 
+        document.onclick = resetTimer;
+
+        function logout() { 
+            alert("หมดเวลาการใช้งาน (30 นาที) ระบบจะออกจากระบบเพื่อความปลอดภัย"); 
+            localStorage.removeItem('wany_admin_session'); 
+            localStorage.removeItem('current_student_code'); 
+            location.reload(); 
+        }
+        
+        function resetTimer() { 
+            clearTimeout(time); 
+            time = setTimeout(logout, 30 * 60 * 1000); 
+        }
     }
 
     function saveToLocalStorage() { localStorage.setItem('wany_data_backup', JSON.stringify({ timestamp: new Date().getTime(), data: dataState })); }
@@ -754,7 +1004,6 @@
         }
     }
 
-    // --- EMAIL SYSTEM ---
     function openEmailModal(role) {
         document.getElementById('email-modal').classList.remove('hidden');
         document.getElementById('email-modal-role').value = role;
@@ -780,7 +1029,6 @@
         showToast("บันทึกอีเมลเรียบร้อย");
     }
 
-    // --- GROUP SUBMISSIONS LOGIC ---
     function renderIncomingSubmissions() { 
         const container = document.getElementById('incoming-list'); container.innerHTML = ''; 
         let pending = dataState.submissions.filter(sub => !dataState.scores.some(sc => sc.taskId == sub.taskId && sc.studentId == sub.studentId));
@@ -810,8 +1058,13 @@
         } 
     };
 
-    // --- STUDENT DASHBOARD ---
     function renderStudentDashboard(s) {
+        // --- ส่วนที่เพิ่ม: อัปเดตชื่อและห้องที่หัวเว็บ ---
+        document.getElementById('std-dash-name').textContent = s.name;
+        const clsName = dataState.classes.find(c => c.id == s.classId)?.name || '-';
+        document.getElementById('std-dash-class').textContent = clsName;
+        // ----------------------------------------
+
         const container = document.getElementById('std-subjects-container'); container.innerHTML = '';
         const myTasks = dataState.tasks.filter(t => t.classId == s.classId);
         const subjectsFound = [...new Set(myTasks.map(t => t.subjectId))];
@@ -874,7 +1127,6 @@
             html += `</div></div></div>`; card.innerHTML = html; container.appendChild(card);
         });
     }
-
     function initEventListeners() {
         document.getElementById('friend-search').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
@@ -943,12 +1195,12 @@
                 const date = document.getElementById('att-date-input').value; 
                 const mode = attMode || 'มา'; 
                 if(!cid) { alert("กรุณาเลือกห้องก่อน"); e.target.value=''; return; } 
-                const s = dataState.students.find(st => (st.code == val || st.no == val) && st.classId == cid); 
+                const s = dataState.students.find(st => (String(st.code) == val || String(st.no) == val) && st.classId == cid); 
                 if(s) { saveAndRefresh({ action:'addAttendance', studentId:s.id, classId:cid, date:date, status:mode }); showToast(`${s.name} : ${mode}`, "bg-green-600"); } else { showToast(`ไม่พบรหัส: ${val}`, "bg-red-600"); } e.target.value = ''; 
             } 
         };
         
-        document.getElementById('scan-score-input').onkeydown = (e) => { if(e.key === 'Enter') { const val = e.target.value.trim(); const cid = document.getElementById('scan-class-select').value; if(!cid) return; const s = dataState.students.find(st => (st.code == val || st.no == val) && st.classId == cid); if(s) { const tid = document.getElementById('scan-task-select').value; const t = dataState.tasks.find(x=>x.id==tid); if(t) { if(scoreMode !== 'manual') { if(Number(scoreMode) > Number(t.maxScore)) { alert("คะแนนที่เลือกเกินคะแนนเต็มของงานนี้!"); } else { saveAndRefresh({action:'addScore', studentId:s.id, taskId:t.id, score:scoreMode}); showToast(`${s.name} : ${scoreMode} คะแนน`, "bg-green-600"); } } else { pendingScore = { s, t }; document.getElementById('score-modal').classList.remove('hidden'); document.getElementById('modal-task-name').textContent = t.name; document.getElementById('modal-student-name').textContent = s.name; document.getElementById('modal-max-score').textContent = t.maxScore; const sc = dataState.scores.find(x => x.studentId == s.id && x.taskId == t.id); document.getElementById('modal-score-input').value = sc ? sc.score : ''; setTimeout(() => document.getElementById('modal-score-input').focus(), 100); } e.target.value = ''; } } else { showToast("ไม่พบนักเรียน", "bg-red-600"); e.target.value = ''; } } };
+        document.getElementById('scan-score-input').onkeydown = (e) => { if(e.key === 'Enter') { const val = e.target.value.trim(); const cid = document.getElementById('scan-class-select').value; if(!cid) return; const s = dataState.students.find(st => (String(st.code) == val || String(st.no) == val) && st.classId == cid); if(s) { const tid = document.getElementById('scan-task-select').value; const t = dataState.tasks.find(x=>x.id==tid); if(t) { if(scoreMode !== 'manual') { if(Number(scoreMode) > Number(t.maxScore)) { alert("คะแนนที่เลือกเกินคะแนนเต็มของงานนี้!"); } else { saveAndRefresh({action:'addScore', studentId:s.id, taskId:t.id, score:scoreMode}); showToast(`${s.name} : ${scoreMode} คะแนน`, "bg-green-600"); } } else { pendingScore = { s, t }; document.getElementById('score-modal').classList.remove('hidden'); document.getElementById('modal-task-name').textContent = t.name; document.getElementById('modal-student-name').textContent = s.name; document.getElementById('modal-max-score').textContent = t.maxScore; const sc = dataState.scores.find(x => x.studentId == s.id && x.taskId == t.id); document.getElementById('modal-score-input').value = sc ? sc.score : ''; setTimeout(() => document.getElementById('modal-score-input').focus(), 100); } e.target.value = ''; } } else { showToast("ไม่พบนักเรียน", "bg-red-600"); e.target.value = ''; } } };
     }
 
     function logoutStudent() { document.getElementById('student-dashboard').classList.add('hidden'); document.getElementById('student-login-wrapper').classList.remove('hidden'); document.getElementById('student-login-id').value = ''; }
