@@ -46,9 +46,9 @@
         const Image = (props) => <Icon {...props} path={<><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></>} />;
         const ChevronRight = (props) => <Icon {...props} path={<polyline points="9 18 15 12 9 6"/>} />;
         const ChevronLeft = (props) => <Icon {...props} path={<polyline points="15 18 9 12 15 6"/>} />;
-        // Added missing icons
         const Settings = (props) => <Icon {...props} path={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>} />;
         const Download = (props) => <Icon {...props} path={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>} />;
+        const Trash = (props) => <Icon {...props} path={<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></>} />;
 
         const { useState, useEffect, useRef } = React;
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwLqt4BQe17ST8aSNzZy78UXZIGL95n7NWux28VrVoqA14Jk9l76Clz3_I8RcgWrII-/exec";
@@ -80,7 +80,8 @@
             // Create Exam Form State
             const [newExam, setNewExam] = useState({ id: '', title: '', time: 60 });
             const [newQuestions, setNewQuestions] = useState([]);
-            const [qDraft, setQDraft] = useState({ text: '', options: ['', '', '', ''], correct: 0, mediaType: 'none', mediaContent: '' });
+            // Initialize options with 2 empty strings
+            const [qDraft, setQDraft] = useState({ text: '', options: ['', ''], correct: 0, mediaType: 'none', mediaContent: '' });
 
             const [systemConfig, setSystemConfig] = useState({ activeExamId: '', isOpen: false, customTimeLimit: 0, activeClassroom: 'All' });
             
@@ -150,11 +151,26 @@
             };
 
             const addQuestionToDraft = () => {
-                if (!qDraft.text || qDraft.options.some(o => !o)) {
-                    alert("กรุณากรอกคำถามและตัวเลือกให้ครบ"); return;
+                if (!qDraft.text || qDraft.options.some(o => !o.trim())) {
+                    alert("กรุณากรอกคำถามและตัวเลือกให้ครบถ้วน"); return;
                 }
                 setNewQuestions([...newQuestions, { ...qDraft }]);
-                setQDraft({ text: '', options: ['', '', '', ''], correct: 0, mediaType: 'none', mediaContent: '' });
+                setQDraft({ text: '', options: ['', ''], correct: 0, mediaType: 'none', mediaContent: '' });
+            };
+
+            // Dynamic Options Logic
+            const addDraftOption = () => {
+                setQDraft(prev => ({ ...prev, options: [...prev.options, ''] }));
+            };
+
+            const removeDraftOption = (index) => {
+                if (qDraft.options.length <= 2) return;
+                const newOptions = qDraft.options.filter((_, i) => i !== index);
+                let newCorrect = qDraft.correct;
+                if (index === qDraft.correct) newCorrect = 0;
+                else if (index < qDraft.correct) newCorrect = qDraft.correct - 1;
+                
+                setQDraft(prev => ({ ...prev, options: newOptions, correct: newCorrect }));
             };
             
             const handleStudentLogin = async (e) => {
@@ -309,13 +325,17 @@
 
                         <input type="text" placeholder="คำถาม..." value={qDraft.text} onChange={e=>setQDraft({...qDraft, text: e.target.value})} className="w-full p-3 border border-gray-300 rounded-lg mb-4 font-medium focus:ring-2 focus:ring-sky-400 outline-none" />
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                        <div className="mb-4 space-y-3">
                             {qDraft.options.map((opt, i) => (
                                 <div key={i} className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border">
                                     <input type="radio" name="correct_draft" className="w-4 h-4 text-sky-600" checked={qDraft.correct === i} onChange={()=>setQDraft({...qDraft, correct: i})} />
                                     <input type="text" placeholder={`ตัวเลือก ${i+1}`} value={opt} onChange={e=>{const newO=[...qDraft.options]; newO[i]=e.target.value; setQDraft({...qDraft, options: newO})}} className="flex-1 p-2 bg-transparent outline-none text-sm" />
+                                    {qDraft.options.length > 2 && (
+                                        <button onClick={() => removeDraftOption(i)} className="p-1 text-slate-400 hover:text-red-500 rounded"><Trash size={16}/></button>
+                                    )}
                                 </div>
                             ))}
+                            <button onClick={addDraftOption} className="text-sm text-sky-600 font-bold hover:underline flex items-center gap-1"><PlusCircle size={14}/> เพิ่มตัวเลือก</button>
                         </div>
                         <button onClick={addQuestionToDraft} className="bg-sky-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-sky-700 shadow flex items-center gap-2"><PlusCircle size={16}/> เพิ่มข้อสอบลงรายการ</button>
                     </div>
@@ -325,7 +345,7 @@
                         <div className="max-h-60 overflow-y-auto space-y-2 mb-6 pr-2">
                             {newQuestions.map((q, i) => (
                                 <div key={i} className="text-sm p-3 bg-white border border-gray-200 rounded-lg flex justify-between items-center shadow-sm">
-                                    <span className="truncate flex-1 font-medium text-slate-700">{i+1}. {q.text} {q.mediaType!=='none' && <span className="text-xs bg-sky-100 text-sky-600 px-2 py-0.5 rounded-full ml-2">มีสื่อ</span>}</span>
+                                    <span className="truncate flex-1 font-medium text-slate-700">{i+1}. {q.text} <span className="text-xs text-gray-400">({q.options.length} ตัวเลือก)</span> {q.mediaType!=='none' && <span className="text-xs bg-sky-100 text-sky-600 px-2 py-0.5 rounded-full ml-2">มีสื่อ</span>}</span>
                                     <button onClick={()=>setNewQuestions(newQuestions.filter((_, idx)=>idx!==i))} className="text-red-500 hover:text-red-700 text-xs font-bold border border-red-200 px-2 py-1 rounded">ลบ</button>
                                 </div>
                             ))}
